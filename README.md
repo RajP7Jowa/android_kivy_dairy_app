@@ -1,2 +1,2 @@
 # milk_app
-Django Python Milk Appkication
+Kivymd mobile app
