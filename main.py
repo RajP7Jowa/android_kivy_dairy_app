@@ -1,394 +1,847 @@
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty, ListProperty,ObjectProperty
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.list import OneLineIconListItem,TwoLineIconListItem, MDList
-from kivy.properties import ObjectProperty
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
-import json
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.list import OneLineListItem,TwoLineIconListItem, MDList
+from kivymd.uix.button import MDFlatButton,MDRectangleFlatButton
 from kivymd.uix.dialog import MDDialog
-import requests
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+from kivymd.uix.card import MDCardSwipe
+from kivymd.uix.label import MDLabel
+from kivymd.uix.textfield import MDTextField
+from functools import partial
+import datetime
+import json
 
 filename_members = "members.txt"
 filename_ratelist = "ratelist.txt"
+
 KV = '''
 ScreenManager:
-    LoginScreen:
-    NavBar:
-
-
-
-# Menu item in the DrawerList list.
-<ItemDrawer>:
-    theme_text_color: "Custom"
-    on_release: self.parent.set_color_item(self)
-
-    IconLeftWidget:
-        id: icon
-        icon: root.icon
-        theme_text_color: "Custom"
-        text_color: root.text_color
+	LoginScreen:
+	NavBar:
 
 
 <ContentNavigationDrawer>:
-    orientation: "vertical"
-    
-    spacing: "10dp"
-    
-    AnchorLayout:
-        anchor_x: "left"
-        size_hint_y: None
-        height: avatar.height
-        padding: "20dp"
-        Image:
-            id: avatar
-            size_hint: None, None
-            size: "56dp", "56dp"
-            source: "data/logo/kivy-icon-256.png"
+	orientation: "vertical"
+	
+	spacing: "10dp"
+	
+	AnchorLayout:
+		anchor_x: "left"
+		size_hint_y: None
+		height: avatar.height
+		padding: "20dp"
+		Image:
+			id: avatar
+			size_hint: None, None
+			size: "56dp", "56dp"
+			source: "data/logo/kivy-icon-256.png"
 
-    MDLabel:
-        text: "Raj Parihar"
-        font_style: "Button"
-        adaptive_height: True
-        padding_x: "20dp"
-        
-    MDLabel:
-        text: "RajParihar@gmail.com"
-        font_style: "Caption"
-        adaptive_height: True
-        padding_x: "20dp"
+	MDLabel:
+		text: "Raj Parihar"
+		font_style: "Button"
+		adaptive_height: True
+		padding_x: "20dp"
+		
+	MDLabel:
+		text: "RajParihar@gmail.com"
+		font_style: "Caption"
+		adaptive_height: True
+		padding_x: "20dp"
 
-    ScrollView:
+	ScrollView:
 
-        DrawerList:
-            id:md_list
-            OneLineIconListItem:
-                text: "Add new member"
-                on_press:
-                    root.nav_drawer.set_state("close")
-                    root.screen_manager.current = "signupscreen"
-                IconLeftWidget:
-                    icon: "account-plus"
-            
-            OneLineIconListItem:
-                id:tata1
-                text: "Members"
-                hide:True
-                on_press:
-                    root.nav_drawer.set_state("close")
-                    root.screen_manager.current = "members"
-                IconLeftWidget:
-                    icon: "account-details"
-            OneLineIconListItem:
-                id:tata2
-                text: "inst"
-                hide:True
-                on_press:
-                    root.nav_drawer.set_state("close")
-                    root.screen_manager.current = "signupscreen"
-                IconLeftWidget:
-                    icon: "users"
+		DrawerList:
+			id:md_list
+			OneLineIconListItem:
+				text: "Add new member"
+				on_press:
+					root.nav_drawer.set_state("close")
+					root.screen_manager.current = "signupscreen"
+				IconLeftWidget:
+					icon: "account-plus"
+			
+			OneLineIconListItem:
+				id:tata1
+				text: "Members"
+				hide:True
+				on_press:
+					root.nav_drawer.set_state("close")
+					root.screen_manager.current = "members"
+				IconLeftWidget:
+					icon: "account-details"
+			OneLineIconListItem:
+				id:tata2
+				text: "Purchase"
+				hide:True
+				on_press:
+					root.nav_drawer.set_state("close")
+					root.screen_manager.current = "purchasesell"
+				IconLeftWidget:
+					icon: "beer-outline"
 
-        
+		
 <LoginScreen>:
-    name:'loginscreen'
-    MDIcon:
-        icon: 'account-key'
-        icon_color: 0, 0, 0, 0
-        halign: 'center'
-        font_size: 100
-        pos_hint: {'center_y':0.80}
+	name:'loginscreen'
+	MDIcon:
+		icon: 'account-key'
+		icon_color: 0, 0, 0, 0
+		halign: 'center'
+		font_size: 100
+		pos_hint: {'center_y':0.80}
 
-    MDTextField:
-        id:login_email
-        size_hint : (0.7,0.1)
-        hint_text: 'User Name'
-        helper_text:'Required'
-        helper_text_mode:  'on_error'
-        icon_right: 'account-check'
-        icon_right_color: app.theme_cls.primary_color
-        required: True
-        
-        pos_hint: {'center_y':0.63,'center_x':0.5}
+	MDTextField:
+		id:login_email
+		size_hint : (0.7,0.1)
+		hint_text: 'User Name'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'account-check'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		
+		pos_hint: {'center_y':0.63,'center_x':0.5}
 
-    MDTextField:
-        id:login_password
-        size_hint : (0.7,0.1)
-        hint_text: 'Password'
-        helper_text:'Required'
-        helper_text_mode:  'on_error'
-        icon_right: 'key-variant'
-        icon_right_color: app.theme_cls.primary_color
-        required: True
-        
-        pos_hint: {'center_y':0.50,'center_x':0.5}
+	MDTextField:
+		id:login_password
+		size_hint : (0.7,0.1)
+		hint_text: 'Password'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'key-variant'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		
+		pos_hint: {'center_y':0.50,'center_x':0.5}
 
-    MDRaisedButton:
-        text:'Login'
-        size_hint: (0.13,0.07)
-        pos_hint: {'center_y':0.37,'center_x':0.5}
-        on_press:
-            app.login()
-            
+	MDRaisedButton:
+		text:'Login'
+		size_hint: (0.3,0.07)
+		pos_hint: {'center_y':0.37,'center_x':0.5}
+		on_press:
+			app.login()
+			
 
 <SignupScreen>:
-    name:'signupscreen'
-    MDIcon:
-        icon: 'account-plus'
-        icon_color: 0, 0, 0, 0
-        halign: 'center'
-        font_size: 90
-        pos_hint: {'center_y':0.82}
+	name:'signupscreen'
+	MDIcon:
+		icon: 'account-plus'
+		icon_color: 0, 0, 0, 0
+		halign: 'center'
+		font_size: 90
+		pos_hint: {'center_y':0.82}
 
-    MDTextField:
-        id:signup_username
-        size_hint : (0.7,0.1)
-        hint_text: 'Name'
-        helper_text:'Required'
-        helper_text_mode:  'on_error'
-        icon_right: 'account'
-        icon_right_color: app.theme_cls.primary_color
-        required: True
-        
-        pos_hint: {'center_y':0.68,'center_x':0.5}
+	MDTextField:
+		id:signup_username
+		size_hint : (0.7,0.1)
+		hint_text: 'Name'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'account'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		
+		pos_hint: {'center_y':0.68,'center_x':0.5}
 
-    MDTextField:
-        id:signup_email
-        size_hint : (0.7,0.1)
-        hint_text: 'Email'
-        helper_text:'Required'
-        helper_text_mode:  'on_error'
-        icon_right: 'email'
-        icon_right_color: app.theme_cls.primary_color
-        required: True
-        
-        pos_hint: {'center_y':0.57,'center_x':0.5}
+	MDTextField:
+		id:signup_email
+		size_hint : (0.7,0.1)
+		hint_text: 'Email'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'email'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		
+		pos_hint: {'center_y':0.57,'center_x':0.5}
 
-    MDTextField:
-        id:signup_mobile
-        size_hint : (0.7,0.1)
-        hint_text: 'Mobile'
-        helper_text:'Required'
-        helper_text_mode:  'on_error'
-        icon_right: 'phone'
-        icon_right_color: app.theme_cls.primary_color
-        required: True
-        
-        input_filter: 'int'
-        pos_hint: {'center_y':0.46,'center_x':0.5}
-    
-    MDTextField:
-        id:signup_address
-        size_hint : (0.7,0.1)
-        hint_text: 'Address'
-        icon_right: 'map'
-        icon_right_color: app.theme_cls.primary_color
-        
-        pos_hint: {'center_y':0.35,'center_x':0.5}
+	MDTextField:
+		id:signup_mobile
+		size_hint : (0.7,0.1)
+		hint_text: 'Mobile'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'phone'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		
+		input_filter: 'int'
+		pos_hint: {'center_y':0.46,'center_x':0.5}
+	
+	MDTextField:
+		id:signup_address
+		size_hint : (0.7,0.1)
+		hint_text: 'Address'
+		icon_right: 'map'
+		icon_right_color: app.theme_cls.primary_color
+		
+		pos_hint: {'center_y':0.35,'center_x':0.5}
 
-    MDRaisedButton:
-        text:'Signup'
-        size_hint: (0.13,0.07)
-        pos_hint: {'center_y':0.22,'center_x':0.5}
-        on_press: app.signup()
+	MDRaisedButton:
+		text:'Signup'
+		size_hint: (0.3,0.07)
+		pos_hint: {'center_y':0.22,'center_x':0.5}
+		on_press: app.signup()
 
-    MDTextButton:
-        text: 'Already have member'
-        pos_hint: {'center_y':0.10,'center_x':0.5}
-        on_press:
-            root.manager.current = 'members'
-            root.manager.transition.direction = 'left'
-    
+	MDTextButton:
+		text: 'Already have member'
+		pos_hint: {'center_y':0.10,'center_x':0.5}
+		on_press:
+			root.manager.current = 'members'
+			root.manager.transition.direction = 'left'
+
+<SwipeToDeleteItem>:
+	size_hint_y: None
+	height: content.height
+
+	MDCardSwipeLayerBox:
+		padding: "8dp"
+
+		MDIconButton:
+			icon: "trash-can"
+			pos_hint: {"center_y": .5}
+			on_release: app.remove_customer(root.secondary_text)
+
+	MDCardSwipeFrontBox:
+
+		TwoLineListItem:
+			id: content
+			text: root.text
+			secondary_text: root.secondary_text
+			_no_ripple_effect: True
+
+
 <Members>:
-    name:'members'
-    id:members
-    MDLabel:
-        text:'All Customers'
-        font_style:'H4'
-        halign:'center'
-        pos_hint: {'center_y':0.82}
+	name:'members'
+	id:members
+	MDLabel:
+		text:'All Customers'
+		font_style:'H5'
+		halign:'center'
+		pos_hint: {'center_y':0.82,'center_x':0.5}
+		
+	MDCard:
+		padding: "10dp"
+		size_hint: (0.8,0.75)
+		pos_hint: {'center_x':0.5}
+		orientation: "vertical"
+		ScrollView:
+			size_hint_y: 0.78
+			MDList:
+				id: membersList
+				padding: 0
 
-    ScrollView:
-        size_hint_y: 0.78
-        DrawerList:
-            id: membersList
-    
+<Check@MDCheckbox>:
+	group: 'group_customers'
+	size_hint: None, None
+	size: dp(30), dp(30)
+
+<CustomOneLineIconListItem>:
+	on_press:
+		app.pick_op_format(self.text)
+		self.ids.tick.active = True
+
+	Check:
+		id: tick
+		active: False
+		pos_hint: {'x': 0.8, 'y': .1}
 
 
-<PurchaseShell>:
-    name: 'purchaseshell'
 
-   
+
+<PurchaseSell>:
+	name: 'purchasesell'
+	on_enter:
+		root.manager.transition.direction = 'right'
+	MDLabel:
+		text:'Purchase'
+		font_style:'H4'
+		halign:'center'
+		pos_hint: {'center_y':0.82,'center_x':0.5}
+	
+	MDBoxLayout:	
+		size_hint : (.75,0.1)
+		spacing: dp(5)
+		pos_hint: {'center_y':0.70,'center_x':0.5}
+		orientation: 'vertical'
+		MDBoxLayout:
+			adaptive_height: True
+			MDIconButton:
+				icon: 'magnify'
+
+			MDTextField:
+				id: search_field
+				hint_text: 'Search Customer'
+				helper_text_mode:  'on_error'
+				required: True
+				on_text:
+					app.menu_customer.dismiss()
+					app.gen_op_list(self.text, True);app.menu_customer.open()
+				on_focus:
+					# if self.focus: app.menu_customer.open()
+	
+		RecycleView:
+			id: rv
+			key_viewclass: 'viewclass'
+			key_size: 'height'
+			RecycleBoxLayout:
+				padding: dp(10)
+				default_size: None, dp(35)
+				default_size_hint: 1, None
+				size_hint_y: None
+				height: self.minimum_height
+				orientation: 'vertical'
+
+	MDGridLayout:
+		size_hint : (1,0.1)
+		pos_hint: {'center_y':0.58,'center_x':0.5}
+		cols: 3
+		MDBoxLayout:
+			MDCheckbox:
+				group: 'group_Timing'
+				id: morning
+				on_active: app.on_checkbox_active("timing","Morning",self.active)
+
+			MDLabel:
+				text: 'Morning'
+				text_size: self.size
+				valign: 'middle'
+
+			MDCheckbox:
+				group: 'group_Timing'
+				id: evening
+				on_active: app.on_checkbox_active("timing","Evening", self.active)
+
+			MDLabel:
+				text: 'Evening'
+				text_size: self.size
+				valign: 'middle'
+
+		MDLabel:
+			text: ' '
+			text_size: self.size
+			halign: 'center'
+			size_hint : (0.3,0.1)
+
+		MDBoxLayout:
+			MDCheckbox:
+				active: True
+				group: 'group_cowBuffalo'
+				id:cow
+				on_active: app.on_checkbox_active("type","cow", self.active)
+
+			MDLabel:
+				text: 'Cow'
+				text_size: self.size
+				valign: 'middle'
+
+			MDCheckbox:
+				group: 'group_cowBuffalo'
+				id: buffalo
+				on_active: app.on_checkbox_active("type","buffalo", self.active)
+
+			MDLabel:
+				text: 'buffalo'
+				text_size: self.size
+				valign: 'middle'
+
+	MDGridLayout:
+		size_hint : (1,0.1)
+		pos_hint: {'center_y':0.48,'center_x':0.5}
+		cols: 2
+		padding: dp(30),dp(0)
+		spacing: dp(30),dp(10)
+		MDTextField:
+			id: field_snf
+			hint_text: 'SNF'
+			helper_text:'Required'
+			helper_text_mode:  'on_error'
+			required: True
+			input_filter: 'float'
+			on_focus: 
+				app.assign_snf()
+				if self.focus: app.menu_snf.open()
+
+		MDTextField:
+			id: field_cnf
+			hint_text: 'CNF'
+			helper_text:'Required'
+			helper_text_mode:  'on_error'
+			required: True
+			input_filter: 'float'
+			on_focus:
+				app.assign_cnf()
+				if self.focus: app.menu_cnf.open()
+
+		MDTextField:
+			id: field_letter
+			hint_text: 'Letter'
+			helper_text:'Required'
+			helper_text_mode:  'on_error'
+			required: True
+			input_filter: 'float'
+			on_text: app.calculate_rate()
+
+		MDTextField:
+			id: field_price
+			hint_text: 'Price'
+			helper_text:'Required'
+			helper_text_mode:  'on_error'
+			required: True
+			disabled:True
+			text:"00.00"
+
+	MDTextField:
+		id: field_remark
+		size_hint : (.75,0.1)
+		hint_text: 'Remark'
+		pos_hint: {'center_y':0.27,'center_x':0.5}
+		on_focus: app.calculate_rate()
+
+	MDRaisedButton:
+		text:'Submit'
+		size_hint: (0.3,0.07)
+		pos_hint: {'center_y':0.17,'center_x':0.5}
+		on_press: app.purchaseSumbit()
+
+<PriceList>:
+	name: 'pricelist'
+	MDLabel:
+		text:'Price List'
+		font_style:'H4'
+		halign:'center'
+		pos_hint: {'center_y':0.82,'center_x':0.5}
+
+	MDBoxLayout:
+		pos_hint: {'center_y':0.75,'center_x':0.5}
+		size_hint: (0.50,0.1)
+
+		MDCheckbox:
+			active: True
+			group: 'group_cowBuffalo'
+			id:cow_plist
+			on_active: app.on_checkbox_pricelist("cow", self.active)
+
+		MDLabel:
+			text: 'Cow'
+			text_size: self.size
+			valign: 'middle'
+
+		MDCheckbox:
+			group: 'group_cowBuffalo'
+			id: buffalo_plist
+			on_active: app.on_checkbox_pricelist("buffalo", self.active)
+
+		MDLabel:
+			text: 'buffalo'
+			text_size: self.size
+			valign: 'middle'
+
+	ScrollView:
+		pos_hint: {'center_y':0.67,'center_x':0.5}
+		size_hint: (0.8,0.07)
+		orientation: "vertical"
+		MDBoxLayout:
+			adaptive_size: True
+			id: tabs_price
+		
+	MDCard:
+		padding: "10dp"
+		size_hint: (0.8,0.63)
+		pos_hint: {'center_x':0.5}
+		orientation: "vertical"
+		ScrollView:
+			size_hint_y: 0.78
+			orientation: "vertical"
+			do_scroll_y: True
+			do_scroll_x: False
+			bar_width: 4
+			MDGridLayout:
+				id: pricelist_chart
+				cols: 2
+				padding: 0, root.height * 0.02
+				size_hint_y: None
+				size_hint_x: 1
+				height: self.minimum_height
+
 <NavBar>:
-    name: 'navbarname'
-    MDScreen:
-        MDToolbar:
-            id: toolbar
-            pos_hint: {"top": 1}
-            elevation: 10
-            title: "Milk Dairy App"
-            left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+	name: 'application'
+	MDScreen:
+		MDToolbar:
+			id:	 toolbar
+			pos_hint: {"top": 1}
+			elevation: 10
+			title: "Milk Dairy App"
+			left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
 
-        MDNavigationLayout:
-            ScreenManager:
-                id: screen_manager
-                SignupScreen:
-                Members:
-                    id:members
-                PurchaseShell:
-                    id:purchaseshell
-               
-            MDNavigationDrawer:
-                id: nav_drawer
+		MDNavigationLayout:
+			ScreenManager:
+				id: screen_manager
+				SignupScreen:
+				Members:
+					id:members
+				PurchaseSell:
+					id:purchasesell
+				PriceList:
+					id:pricelist
+				
+			MDNavigationDrawer:
+				id: nav_drawer
 
-                ContentNavigationDrawer:
-                    id: content_drawer
-                    screen_manager: screen_manager
-                    nav_drawer: nav_drawer
+				ContentNavigationDrawer:
+					id: content_drawer
+					screen_manager: screen_manager
+					nav_drawer: nav_drawer
 
 '''
 
+
+
 class LoginScreen(Screen):
-    pass
+	pass
 class SignupScreen(Screen):
-    pass
+	pass
 class NavBar(Screen):
-    pass
+	pass
 class Members(Screen):
-    pass
-class PurchaseShell(Screen):
-    pass
+	pass
+class PurchaseSell(Screen):
+	pass
+class PriceList(Screen):
+	pass
 sm = ScreenManager(transition=FadeTransition())
 sm.add_widget(LoginScreen(name = 'loginscreen'))
 sm.add_widget(SignupScreen(name = 'signupscreen'))
-sm.add_widget(NavBar(name = 'navbarname'))
+sm.add_widget(NavBar(name = 'application'))
 sm.add_widget(Members(name = 'members'))
-sm.add_widget(PurchaseShell(name = 'purchaseshell'))
+sm.add_widget(PurchaseSell(name = 'purchasesell'))
+sm.add_widget(PriceList(name = 'pricelist'))
 
 class ContentNavigationDrawer(MDBoxLayout):
-    screen_manager = ObjectProperty()
-    nav_drawer = ObjectProperty()
-    pass
+	screen_manager = ObjectProperty()
+	nav_drawer = ObjectProperty()
+	pass
 
-
+class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.background_down = self.theme_cls.primary_light
+		self.font_color_down = [0.0, 0.0, 0.0, 0.87]
+		
 class TwoLineIconListItem(TwoLineIconListItem):
-    icon = StringProperty()
-    text_color = ListProperty((0, 0, 0, 1))
+	icon = StringProperty()
+	text_color = ListProperty((0, 0, 0, 1))
 
 
+class SwipeToDeleteItem(MDCardSwipe):
+	text = StringProperty()
+	secondary_text = StringProperty()
+
+class CustomOneLineIconListItem(OneLineListItem):
+	icon = StringProperty()
+
+	
 class DrawerList(ThemableBehavior, MDList):
-    def set_color_item(self, instance_item):
-        """Called when tap on a menu item."""
-
-        # Set the color of the icon and text for the menu item.
-        for item in self.children:
-            if item.text_color == self.theme_cls.primary_color:
-                item.text_color = self.theme_cls.text_color
-                break
-        instance_item.text_color = self.theme_cls.primary_color
+	def set_color_item(self, instance_item):
+		for item in self.children:
+			if item.text_color == self.theme_cls.primary_color:
+				item.text_color = self.theme_cls.text_color
+				break
+		instance_item.text_color = self.theme_cls.primary_color
 
 
 class MilkApp(MDApp):
-    def build(self):
-        self.strng = Builder.load_string(KV)
-        return self.strng
-        
-    def debug(self):
-        self.login_check= True
-        self.redirect_page("purchaseshell")
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+		self.output_ext=''
+		self.output_ext_snf=''
+		self.output_ext_cnf=''
+		self.output_ext_cow_buffalo="cow"
+		self.pricelist_cowb_selection = "cow"
+		
 
-    def on_start(self):
-        # self.strng.get_screen("navbarname").ids.members.ids.membersList.remove
-        self.login_check= False
-        self.alluser()
-        self.debug()
-    
-    def allMembersList(self):
-        self.strng.get_screen("navbarname").ids.members.ids.membersList.clear_widgets()
-        for key in self.allUser:
-            if key !="admin":
-                self.strng.get_screen("navbarname").ids.members.ids.membersList.add_widget(
-                    TwoLineIconListItem(icon="account",text=f"{self.allUser[key]['UserName']}",secondary_text=f"{key}")
-                )
+	def build(self):
+		self.theme_cls.primary_palette = "Blue"
+		self.badgespage = Builder.load_string(KV)
+		return self.badgespage
+		
+	def debug(self):
+		self.login_check= True
+		self.redirect_page("pricelist")
 
-    def flash(self,msgtype, msgtext):
-        cancel_btn_username_dialogue = MDFlatButton(text = 'Retry',on_release = self.close_username_dialog)
-        self.dialog = MDDialog(title = msgtype,text = msgtext,size_hint = (0.7,0.2),buttons = [cancel_btn_username_dialogue])
-        self.dialog.open()
+	def get_morning(self):
+		hour_day = datetime.datetime.now().hour
+		if (hour_day > 4) and (hour_day <= 12):
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.morning.active = True
+		else:
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.evening.active = True
 
-    def alluser(self):
-        f = open(filename_members,"r")
-        fileData = f.read()
-        jsonData = json.loads(fileData) if (fileData != "") else {}
-        f.close()
-        self.allUserLen = len(jsonData)-1
-        self.allUser = jsonData
-        return jsonData
+	def on_start(self):
+		self.login_check= False
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.disabled = True
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_letter.disabled = True
+		self.alluser()
+		self.get_morning()
+		self.gen_op_list()
+		self.ratelist()
+		self.debug()
+		self.pricelist_header()
+		# print(self.badgespage.get_screen("application").ids.members.ids.membersList)
+	
+	def allMembersList(self):
+		self.badgespage.get_screen("application").ids.members.ids.membersList.clear_widgets()
+		for key in self.allUser:
+			if key !="admin":
+				self.badgespage.get_screen("application").ids.members.ids.membersList.add_widget(
+					SwipeToDeleteItem(text=f"{self.allUser[key]['UserName']}",secondary_text=f"{key}")
+				)
+
+	def flash(self,msgtype, msgtext):
+		cancel_btn_username_dialogue = MDFlatButton(text = 'Retry',on_release = self.close_username_dialog)
+		self.dialog = MDDialog(title = msgtype,text = msgtext,size_hint = (0.7,0.2),buttons = [cancel_btn_username_dialogue])
+		self.dialog.open()
+
+	def alluser(self):
+		f = open(filename_members,"r")
+		fileData = f.read()
+		jsonData = json.loads(fileData) if (fileData != "") else {}
+		f.close()
+		self.allUserLen = len(jsonData)-1
+		self.allUser = jsonData
+		return jsonData
+
+	def ratelist(self):
+		f = open(filename_ratelist,"r")
+		fileData = f.read()
+		jsonData = json.loads(fileData) if (fileData != "") else {}
+		f.close()
+		self.rateListJson = jsonData
+		return jsonData
+
+	def writeOnfile(self, filename, dataOfJson):
+		w= open(filename,"w")
+		w.write(dataOfJson)
+		w.close()
+		return
+
+	def save_to_json(self,mobile, signup, checkonly):
+		jsonData = self.alluser()
+		if mobile in jsonData:
+			if checkonly:
+				return jsonData[mobile]
+			else:
+				return False
+		else:
+			if not checkonly:
+				jsonData[mobile]= signup
+				self.allUserLen = len(jsonData)
+				self.allUser = jsonData
+				self.allMembersList()
+				self.writeOnfile(filename_members, json.dumps(jsonData))
+				return True
+			else:
+				return False
+
+	def remove_customer(self, mobile):
+		jsonData = self.alluser()
+		del jsonData[mobile]
+		self.allUserLen = len(jsonData)
+		self.allUser = jsonData
+		self.allMembersList()
+		self.writeOnfile(filename_members, json.dumps(jsonData))
+		
+
+	def signup(self):
+		signupEmail = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_email.text
+		signupMobile = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_mobile.text
+		signupUsername = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_username.text
+		signupAddress = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_address.text
+		if signupEmail.split() == [] or signupMobile.split() == [] or signupUsername.split() == []:
+			self.flash('Required Input', 'Please check required input are missing.')
+		else:
+			signup_info = {"Email":signupEmail,"UserName":signupUsername, "Address":signupAddress}
+			if not self.save_to_json(signupMobile, signup_info, False):
+				self.flash('Already Exist','Mobile no '+signupMobile+'\nAlready exist.')				
+			else:
+				self.redirect_page("members")
+	
+	def login(self):
+		loginEmail = self.badgespage.get_screen('loginscreen').ids.login_email.text
+		loginPassword = self.badgespage.get_screen('loginscreen').ids.login_password.text
+		authentication =  self.save_to_json(loginEmail, loginPassword, True)
+		if not authentication:
+			self.flash('Incorrect Credentials',"User no longer exists.")
+		else:
+			if authentication["Address"] == loginPassword:
+				self.login_check=True
+				self.redirect_page("members")
+			else:
+				self.flash('Incorrect Credentials',"Password not match.")
+	
+ 
+	def gen_op_list(self, text="", search=False):
+		listOfMenu = []
+		def add_icon_item(format, secondtext):
+			listOfMenu.append(
+				{
+					"viewclass": "CustomOneLineIconListItem",
+					"text": "[b] "+secondtext+" [/b][/size]"+ format
+				}
+			)
+		for format in self.alluser():
+			if format != "admin":
+				if search:
+					if text in self.allUser[format]['UserName']:
+						add_icon_item(format, self.allUser[format]['UserName'])		
+				else:
+					add_icon_item(format, self.allUser[format]['UserName'])
+		self.menu_customer = MDDropdownMenu(
+			caller=self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.search_field,
+			items=listOfMenu,
+			position="bottom",
+			width_mult=5,
+			max_height=200 	 
+		)
+		
+	def assign_snf(self):
+		menu_items_snf = [
+			{
+				"viewclass": "OneLineListItem",
+				"text": f"{i}",
+				"on_release": lambda x=f"{i}": self.set_item(x,"snf"),
+			} for i in self.rateListJson[self.output_ext_cow_buffalo]]
+		self.menu_snf = MDDropdownMenu(
+			caller=self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_snf,
+			items=menu_items_snf,
+			position="bottom",
+			width_mult=5,
+			max_height=200
+		)
+		self.menu_snf.bind(on_release=self.menu_callback)
+
+	def menu_callback(self, instance_menu, instance_menu_item):
+		print(instance_menu, instance_menu_item)
 
 
-    def save_to_json(self,mobile, signup, checkonly):
-        jsonData = self.alluser()
-        if mobile in jsonData:
-            if checkonly:
-                return jsonData[mobile]
-            else:
-                return False
-        else:
-            if not checkonly:
-                r= open(filename_members,"w")
-                jsonData[mobile]= signup
-                self.allUserLen = len(jsonData)
-                self.allUser = jsonData
-                self.allMembersList()
-                r.write(json.dumps(jsonData))
-                r.close()
-                return True
-            else:
-                return False
-        
+	def assign_cnf(self):
+		menu_items_cnf = [
+			{
+				"viewclass": "OneLineListItem",
+				"text": f"{i}",
+				"on_release": lambda x=f"{i}": self.set_item(x,"cnf"),
+			} for i in self.rateListJson[self.output_ext_cow_buffalo][self.output_ext_snf]]
 
-    def signup(self):
-        signupEmail = self.strng.get_screen("navbarname").ids.screen_manager.get_screen('signupscreen').ids.signup_email.text
-        signupMobile = self.strng.get_screen("navbarname").ids.screen_manager.get_screen('signupscreen').ids.signup_mobile.text
-        signupUsername = self.strng.get_screen("navbarname").ids.screen_manager.get_screen('signupscreen').ids.signup_username.text
-        signupAddress = self.strng.get_screen("navbarname").ids.screen_manager.get_screen('signupscreen').ids.signup_address.text
-        if signupEmail.split() == [] or signupMobile.split() == [] or signupUsername.split() == []:
-            self.flash('Required Input', 'Please check required input')
-        else:
-            signup_info = {"Email":signupEmail,"UserName":signupUsername, "Address":signupAddress}
-            if not self.save_to_json(signupMobile, signup_info, False):
-                self.flash('Already Exist','Mobile no '+signupMobile+'\nAlready exist.')                
-            else:
-                self.redirect_page("members")
-    
-    def login(self):
-        loginEmail = self.strng.get_screen('loginscreen').ids.login_email.text
-        loginPassword = self.strng.get_screen('loginscreen').ids.login_password.text
-        authentication =  self.save_to_json(loginEmail, loginPassword, True)
-        if not authentication:
-            self.flash('Incorrect Credentials',"User no longer exists.")
-        else:
-            if authentication["Address"] == loginPassword:
-                self.login_check=True
-                self.redirect_page("members")
-            else:
-                self.flash('Incorrect Credentials',"Password not match.")
+		self.menu_cnf = MDDropdownMenu(
+			caller=self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf,
+			items=menu_items_cnf,
+			position="bottom",
+			width_mult=5,
+			max_height=200
+		)
+	
 
-        
-    def close_username_dialog(self,obj):
-        self.dialog.dismiss()
-    
-    def redirect_page(self, pageName):
-        if self.login_check:
-            self.strng.get_screen('navbarname').manager.current = 'navbarname'
-            self.strng.get_screen("navbarname").ids.screen_manager.get_screen(pageName).manager.current = pageName
-            # self.strng.get_screen('navbarname').ids.username_info.text = f"our Customers {self.allUserLen}"
-        else:
-            self.strng.get_screen('loginscreen').manager.current = 'loginscreen'
-        
+	def close_username_dialog(self,obj):
+		self.dialog.dismiss()
+	
+	def top_menu_call(self):
+		self.menu.open()
+
+	def pick_op_format(self, format):
+		self.output_ext= format.split("[/size]")[1]
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.search_field.text = (format.split("]")[1].split('[')[0]).strip()
+		
+	def set_item(self, text_item,type):
+		if type =="snf":
+			self.output_ext_snf = text_item
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_snf.text = text_item
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.disabled = False
+			self.menu_snf.dismiss()
+		if type =="cnf":
+			self.output_ext_cnf = text_item
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.text = text_item
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_letter.disabled = False
+			self.menu_cnf.dismiss()
+	
+	def calculate_rate(self):
+		rate = self.rateListJson[self.output_ext_cow_buffalo][self.output_ext_snf][self.output_ext_cnf]
+		letter = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_letter.text
+		if rate !=0 and rate !="" and letter !="":
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_price.text =  str('{0:.3g}'.format(rate*float(letter)))
+				
+		
+	def purchaseSumbit(self):
+		if self.output_ext_cnf != "" and self.output_ext_cnf != 0:
+			print('snf', self.output_ext_snf)
+		
+		if self.output_ext_snf != "" and self.output_ext_snf != 0:
+			print('cnf', self.output_ext_cnf)
+		
+		if self.output_ext != "" and self.output_ext != 0:
+			print('customer', self.output_ext)
+
+		if self.output_ext_cow_buffalo != "" and self.output_ext_cow_buffalo != 0:
+			print('customer', self.output_ext_cow_buffalo)
+		letter = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_letter.text
+		if letter != "" and letter != 0:
+			print('customer', letter)
+		
+		print('remark',self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_remark.text)
+		# Write on file 
 
 
-MilkApp().run()
+	def on_checkbox_active(self,type ,value, state):
+		if type !="timing":
+			if state:
+				self.output_ext_cow_buffalo= value
+		else:
+			if state:
+				self.output_ext_timing= value
+
+	def pricelist_header(self):
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.clear_widgets()
+		self.ratelist()
+		for i in self.rateListJson[self.pricelist_cowb_selection]:
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.add_widget(MyToggleButton(text=f"{i}", group="tab_button", on_press=partial(self.on_loadPrice_list, f"{i}")))
+
+   
+	def on_checkbox_pricelist(self, value, state):
+		if state:
+			self.pricelist_cowb_selection = value
+			self.pricelist_header()
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.clear_widgets()
+
+	def load_price_table(self):
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.clear_widgets()
+		for i in self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection]:
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDLabel(text=f"{i}", halign="center"))
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDTextField(text=f"{self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection][i]}", halign="center",helper_text='Required', helper_text_mode= 'on_error',required= True,input_filter= 'float',max_height=65,on_text_validate=partial(self.on_anything,f"{self.pricelist_cowb_selection}",f"{self.pricelist_snf_selection}", f"{i}" )))
+	
+	def on_loadPrice_list(self, *args, **kwargs):
+		self.pricelist_snf_selection = (args[0])
+		self.load_price_table()
+
+	def on_anything(self, *args, **kwargs):
+		cow_b= args[0]
+		snf = args[1]
+		cnf = args[2]
+		price =args[3].text
+		self.rateListJson[cow_b][snf][cnf] = price 
+		self.writeOnfile(filename_ratelist, json.dumps(self.rateListJson))
+		self.load_price_table()
+
+	def redirect_page(self, pageName):
+		if self.login_check:
+			self.badgespage.get_screen('application').manager.current = 'application'
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen(pageName).manager.current = pageName
+			# self.badgespage.get_screen('application').ids.username_info.text = f"our Customers {self.allUserLen}"
+		else:
+			self.badgespage.get_screen('loginscreen').manager.current = 'loginscreen'
+		
+
+if __name__ == '__main__':
+	MilkApp().run()
