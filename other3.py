@@ -1,4 +1,4 @@
- from kivy.lang import Builder
+from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty,ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 
@@ -14,11 +14,13 @@ from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.label import MDLabel
 from kivymd.uix.textfield import MDTextField
 from functools import partial
-import datetime
+from datetime import datetime
 import json
 
-filename_members = "members.txt"
-filename_ratelist = "ratelist.txt"
+
+filename_members = "./assets/members.txt"
+filename_ratelist = "./assets/ratelist.txt"
+filename_history = "./assets/history.txt"
 
 KV = '''
 ScreenManager:
@@ -43,13 +45,13 @@ ScreenManager:
 			source: "data/logo/kivy-icon-256.png"
 
 	MDLabel:
-		text: "Raj Parihar"
+		text: "Milk Shree Dairy"
 		font_style: "Button"
 		adaptive_height: True
 		padding_x: "20dp"
 		
 	MDLabel:
-		text: "RajParihar@gmail.com"
+		text: "Linga, Kareli"
 		font_style: "Caption"
 		adaptive_height: True
 		padding_x: "20dp"
@@ -162,21 +164,17 @@ ScreenManager:
 		id:signup_email
 		size_hint : (0.7,0.1)
 		hint_text: 'Email'
-		helper_text:'Required'
-		helper_text_mode:  'on_error'
 		icon_right: 'email'
 		icon_right_color: app.theme_cls.primary_color
-		required: True
-		
 		pos_hint: {'center_y':0.57,'center_x':0.5}
 
 	MDTextField:
 		id:signup_mobile
 		size_hint : (0.7,0.1)
-		hint_text: 'Mobile'
+		hint_text: 'Identification'
 		helper_text:'Required'
 		helper_text_mode:  'on_error'
-		icon_right: 'phone'
+		icon_right: 'star'
 		icon_right_color: app.theme_cls.primary_color
 		required: True
 		
@@ -211,12 +209,11 @@ ScreenManager:
 
 	MDCardSwipeLayerBox:
 		padding: "8dp"
-
 		MDIconButton:
 			icon: "trash-can"
 			pos_hint: {"center_y": .5}
 			on_release: app.remove_customer(root.secondary_text)
-
+			
 	MDCardSwipeFrontBox:
 
 		TwoLineListItem:
@@ -224,7 +221,7 @@ ScreenManager:
 			text: root.text
 			secondary_text: root.secondary_text
 			_no_ripple_effect: True
-
+			
 
 <Members>:
 	name:'members'
@@ -379,7 +376,7 @@ ScreenManager:
 
 		MDTextField:
 			id: field_cnf
-			hint_text: 'CNF'
+			hint_text: 'FAT'
 			helper_text:'Required'
 			helper_text_mode:  'on_error'
 			required: True
@@ -466,6 +463,20 @@ ScreenManager:
 		size_hint: (0.8,0.63)
 		pos_hint: {'center_x':0.5}
 		orientation: "vertical"
+		MDGridLayout:
+			cols: 2
+			padding: 0, root.height * 0.02
+			size_hint_y: None
+			size_hint_x: 1
+			height: self.minimum_height
+			MDLabel:
+				text: 'FAT'
+				text_size: self.size
+				halign:'center'
+			MDLabel:
+				text: 'Price'
+				text_size: self.size
+				halign:'center'
 		ScrollView:
 			size_hint_y: 0.78
 			orientation: "vertical"
@@ -583,10 +594,10 @@ class MilkApp(MDApp):
 		
 	def debug(self):
 		self.login_check= True
-		self.redirect_page("pricelist")
+		self.redirect_page("purchasesell")
 
 	def get_morning(self):
-		hour_day = datetime.datetime.now().hour
+		hour_day = datetime.now().hour
 		if (hour_day > 4) and (hour_day <= 12):
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.morning.active = True
 		else:
@@ -600,10 +611,12 @@ class MilkApp(MDApp):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.disabled = True
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.purchase_submit.disabled = True
 		self.alluser()
+		self.allMembersList()
 		self.get_morning()
 		self.gen_op_list()
 		self.ratelist()
 		self.pricelist_header()
+		self.debug()
 		# print(self.badgespage.get_screen("application").ids.members.ids.membersList)
 	
 	def allMembersList(self):
@@ -635,6 +648,14 @@ class MilkApp(MDApp):
 		f.close()
 		self.rateListJson = jsonData
 		return jsonData
+		
+	def get_history(self):
+		f = open(filename_history,"r")
+		fileData = f.read()
+		jsonData = json.loads(fileData) if (fileData != "") else {}
+		f.close()
+		self.history = jsonData
+		return True
 
 	def writeOnfile(self, filename, dataOfJson):
 		w= open(filename,"w")
@@ -674,12 +695,12 @@ class MilkApp(MDApp):
 		signupMobile = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_mobile.text
 		signupUsername = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_username.text
 		signupAddress = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_address.text
-		if signupEmail.split() == [] or signupMobile.split() == [] or signupUsername.split() == []:
+		if signupMobile.split() == [] or signupUsername.split() == []:
 			self.flash('Required Input', 'Please check required input are missing.')
 		else:
 			signup_info = {"Email":signupEmail,"UserName":signupUsername, "Address":signupAddress}
 			if not self.save_to_json(signupMobile, signup_info, False):
-				self.flash('Already Exist','Mobile no '+signupMobile+'\nAlready exist.')				
+				self.flash('Already Exist','Identification no '+signupMobile+'\nAlready exist.')
 			else:
 				self.redirect_page("purchasesell")
 	
@@ -824,14 +845,26 @@ class MilkApp(MDApp):
 		
 	def printSlip(self, bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, sift):
 		print(
+			"sift >>>|"+ sift + 
 			"bill_snf >>>| "+ bill_snf +
 			"bill_cnf >>>| "+ bill_cnf +
 			"bill_customer >>>| "+ bill_customer +
 			"bill_cow_b >>>| "+ bill_cow_b +
 			"bill_litre >>>| "+ bill_litre +
-			"bill_price >>>| "+ bill_price + 
-			"sift >>>|"+ sift
+			"bill_price >>>| "+ bill_price
 		)
+
+		today = datetime.today()
+		# Textual month, day and year	
+		d2 = today.strftime("%a, %d %b %Y %I:%M %p")
+		d3 = today.strftime("%a%d%b%Y%I%M%p")
+		self.get_history()
+		
+		if bill_customer in self.history:
+			self.history[bill_customer].insert(0,{d3:{"date":d2, "sift":sift,"type":bill_cow_b, "snf":bill_snf, "cnf":bill_cnf, "weight":bill_litre, "price":bill_price, "remark":remark}})
+		else:
+			self.history[bill_customer] = [{d3:{"date":d2, "sift":sift,"type":bill_cow_b, "snf":bill_snf, "cnf":bill_cnf, "weight":bill_litre, "price":bill_price, "remark":remark}}]
+		self.writeOnfile(filename_history, json.dumps(self.history))
 
 
 	def on_checkbox_active(self,type ,value, state):
@@ -848,6 +881,9 @@ class MilkApp(MDApp):
 		for i in self.rateListJson[self.pricelist_cowb_selection]:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.add_widget(MyToggleButton(text=f"{i}", group="tab_button", on_press=partial(self.on_loadPrice_list, f"{i}")))
 
+	def on_loadPrice_list(self, *args, **kwargs):
+		self.pricelist_snf_selection = (args[0])
+		self.load_price_table()
    
 	def on_checkbox_pricelist(self, value, state):
 		if state:
@@ -859,13 +895,10 @@ class MilkApp(MDApp):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.clear_widgets()
 		for i in self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection]:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDLabel(text=f"{i}", halign="center"))
-			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDTextField(text=f"{self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection][i]}", halign="center",helper_text='Required', helper_text_mode= 'on_error',required= True,input_filter= 'float',max_height=65,on_text_validate=partial(self.on_anything,f"{self.pricelist_cowb_selection}",f"{self.pricelist_snf_selection}", f"{i}" )))
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDTextField(text=f"{self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection][i]}", halign="center",helper_text='Required', helper_text_mode= 'on_error',required= True,input_filter= 'float',max_height=65,on_text_validate=partial(self.on_setPriceUpdate,f"{self.pricelist_cowb_selection}",f"{self.pricelist_snf_selection}", f"{i}" )))
 	
-	def on_loadPrice_list(self, *args, **kwargs):
-		self.pricelist_snf_selection = (args[0])
-		self.load_price_table()
 
-	def on_anything(self, *args, **kwargs):
+	def on_setPriceUpdate(self, *args, **kwargs):
 		cow_b= args[0]
 		snf = args[1]
 		cnf = args[2]
