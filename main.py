@@ -1,7 +1,7 @@
- from kivy.lang import Builder
+from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty,ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
-
+from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -11,14 +11,20 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
 from kivymd.uix.card import MDCardSwipe
-from kivymd.uix.label import MDLabel
+from kivymd.uix.label import MDLabel,MDIcon
 from kivymd.uix.textfield import MDTextField
+from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.gridlayout import MDGridLayout
+import copy
 from functools import partial
-import datetime
+from datetime import datetime
 import json
+import os
 
-filename_members = "members.txt"
-filename_ratelist = "ratelist.txt"
+
+filename_members = "./assets/members.txt"
+filename_ratelist = "./assets/ratelist.txt"
+filename_history = "./assets/history.txt"
 
 KV = '''
 ScreenManager:
@@ -41,15 +47,14 @@ ScreenManager:
 			size_hint: None, None
 			size: "56dp", "56dp"
 			source: "data/logo/kivy-icon-256.png"
-
 	MDLabel:
-		text: "Raj Parihar"
+		text: "Milk Shree Dairy"
 		font_style: "Button"
 		adaptive_height: True
 		padding_x: "20dp"
 		
 	MDLabel:
-		text: "RajParihar@gmail.com"
+		text: "Linga, Kareli"
 		font_style: "Caption"
 		adaptive_height: True
 		padding_x: "20dp"
@@ -162,21 +167,17 @@ ScreenManager:
 		id:signup_email
 		size_hint : (0.7,0.1)
 		hint_text: 'Email'
-		helper_text:'Required'
-		helper_text_mode:  'on_error'
 		icon_right: 'email'
 		icon_right_color: app.theme_cls.primary_color
-		required: True
-		
 		pos_hint: {'center_y':0.57,'center_x':0.5}
 
 	MDTextField:
 		id:signup_mobile
 		size_hint : (0.7,0.1)
-		hint_text: 'Mobile'
+		hint_text: 'Identification'
 		helper_text:'Required'
 		helper_text_mode:  'on_error'
-		icon_right: 'phone'
+		icon_right: 'star'
 		icon_right_color: app.theme_cls.primary_color
 		required: True
 		
@@ -208,15 +209,7 @@ ScreenManager:
 <SwipeToDeleteItem>:
 	size_hint_y: None
 	height: content.height
-
-	MDCardSwipeLayerBox:
-		padding: "8dp"
-
-		MDIconButton:
-			icon: "trash-can"
-			pos_hint: {"center_y": .5}
-			on_release: app.remove_customer(root.secondary_text)
-
+	on_swipe_complete:  app.remove_customer(root.secondary_text)
 	MDCardSwipeFrontBox:
 
 		TwoLineListItem:
@@ -224,7 +217,8 @@ ScreenManager:
 			text: root.text
 			secondary_text: root.secondary_text
 			_no_ripple_effect: True
-
+			on_release: app.bill_history(root.secondary_text)
+		
 
 <Members>:
 	name:'members'
@@ -233,15 +227,15 @@ ScreenManager:
 		text:'All Customers'
 		font_style:'H5'
 		halign:'center'
-		pos_hint: {'center_y':0.82,'center_x':0.5}
+		pos_hint: {'center_y':0.85,'center_x':0.5}
 		
 	MDCard:
 		padding: "10dp"
-		size_hint: (0.8,0.75)
+		size_hint: (0.8,0.80)
 		pos_hint: {'center_x':0.5}
 		orientation: "vertical"
 		ScrollView:
-			size_hint_y: 0.78
+			size_hint_y: 0.8
 			MDList:
 				id: membersList
 				padding: 0
@@ -270,14 +264,14 @@ ScreenManager:
 		root.manager.transition.direction = 'right'
 	MDLabel:
 		text:'Purchase'
-		font_style:'H4'
+		font_style:'H5'
 		halign:'center'
-		pos_hint: {'center_y':0.82,'center_x':0.5}
+		pos_hint: {'center_y':0.85,'center_x':0.5}
 	
 	MDBoxLayout:	
 		size_hint : (.75,0.1)
 		spacing: dp(5)
-		pos_hint: {'center_y':0.70,'center_x':0.5}
+		pos_hint: {'center_y':0.75,'center_x':0.5}
 		orientation: 'vertical'
 		MDBoxLayout:
 			adaptive_height: True
@@ -309,7 +303,7 @@ ScreenManager:
 
 	MDGridLayout:
 		size_hint : (1,0.1)
-		pos_hint: {'center_y':0.58,'center_x':0.5}
+		pos_hint: {'center_y':0.65,'center_x':0.5}
 		cols: 3
 		MDBoxLayout:
 			MDCheckbox:
@@ -362,7 +356,7 @@ ScreenManager:
 
 	MDGridLayout:
 		size_hint : (1,0.1)
-		pos_hint: {'center_y':0.48,'center_x':0.5}
+		pos_hint: {'center_y':0.55,'center_x':0.5}
 		cols: 2
 		padding: dp(30),dp(0)
 		spacing: dp(30),dp(10)
@@ -379,7 +373,7 @@ ScreenManager:
 
 		MDTextField:
 			id: field_cnf
-			hint_text: 'CNF'
+			hint_text: 'FAT'
 			helper_text:'Required'
 			helper_text_mode:  'on_error'
 			required: True
@@ -410,26 +404,25 @@ ScreenManager:
 		id: field_remark
 		size_hint : (.75,0.1)
 		hint_text: 'Remark'
-		pos_hint: {'center_y':0.27,'center_x':0.5}
-		on_focus: app.calculate_rate()
+		pos_hint: {'center_y':0.34,'center_x':0.5}
 
 	MDRaisedButton:
 		text:'Submit'
 		id:purchase_submit
 		size_hint: (0.3,0.07)
-		pos_hint: {'center_y':0.17,'center_x':0.5}
+		pos_hint: {'center_y':0.20,'center_x':0.5}
 		on_press: app.purchaseSumbit()
 
 <PriceList>:
 	name: 'pricelist'
 	MDLabel:
 		text:'Price List'
-		font_style:'H4'
+		font_style:'H5'
 		halign:'center'
-		pos_hint: {'center_y':0.82,'center_x':0.5}
+		pos_hint: {'center_y':0.85,'center_x':0.5}
 
 	MDBoxLayout:
-		pos_hint: {'center_y':0.75,'center_x':0.5}
+		pos_hint: {'center_y':0.79,'center_x':0.5}
 		size_hint: (0.50,0.1)
 
 		MDCheckbox:
@@ -454,7 +447,7 @@ ScreenManager:
 			valign: 'middle'
 
 	ScrollView:
-		pos_hint: {'center_y':0.67,'center_x':0.5}
+		pos_hint: {'center_y':0.70,'center_x':0.5}
 		size_hint: (0.8,0.07)
 		orientation: "vertical"
 		MDBoxLayout:
@@ -463,9 +456,23 @@ ScreenManager:
 		
 	MDCard:
 		padding: "10dp"
-		size_hint: (0.8,0.63)
+		size_hint: (0.8,0.67)
 		pos_hint: {'center_x':0.5}
 		orientation: "vertical"
+		MDGridLayout:
+			cols: 2
+			padding: 0, root.height * 0.02
+			size_hint_y: None
+			size_hint_x: 1
+			height: self.minimum_height
+			MDLabel:
+				text: 'FAT'
+				text_size: self.size
+				halign:'center'
+			MDLabel:
+				text: 'Price'
+				text_size: self.size
+				halign:'center'
 		ScrollView:
 			size_hint_y: 0.78
 			orientation: "vertical"
@@ -480,6 +487,37 @@ ScreenManager:
 				size_hint_x: 1
 				height: self.minimum_height
 
+<HistoryPage>:
+	name: 'historypage'
+	MDToolbar:
+		title:'Demo'
+		left_action_items:[['account',lambda x: app.redirect_page('members')]]
+		elevation:0
+		pos_hint: {"top": 0.90}
+		md_bg_color: 1,1,1,1
+		padding:0
+		id:historypageCustomer
+		specific_text_color:0,0,0,1
+		size_hint_y: 0.08
+		MDLabel:
+			id:historypageCustomer1
+			text_size: self.size
+			valign: 'middle'
+		
+	MDBoxLayout:
+		id:historypageDataTable
+		size_hint: (1,0.82)
+		pos_hint: {'center_x':0.5}
+		orientation: "vertical"
+
+<Content>
+	name: 'printContent'
+	orientation: "vertical"
+	spacing: "12dp"
+	padding: "12dp"
+	size_hint_y: None
+	height: "170dp"
+	
 <NavBar>:
 	name: 'application'
 	MDScreen:
@@ -489,6 +527,8 @@ ScreenManager:
 			elevation: 10
 			title: "Milk Dairy App"
 			left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+			right_action_items:[['account',lambda x: app.redirect_page('members')]]
+			md_bg_color: 0,0,100/255,1
 
 		MDNavigationLayout:
 			ScreenManager:
@@ -500,6 +540,8 @@ ScreenManager:
 					id:purchasesell
 				PriceList:
 					id:pricelist
+				HistoryPage:
+					id:history
 				
 			MDNavigationDrawer:
 				id: nav_drawer
@@ -525,38 +567,27 @@ class PurchaseSell(Screen):
 	pass
 class PriceList(Screen):
 	pass
-sm = ScreenManager(transition=FadeTransition())
-sm.add_widget(LoginScreen(name = 'loginscreen'))
-sm.add_widget(SignupScreen(name = 'signupscreen'))
-sm.add_widget(NavBar(name = 'application'))
-sm.add_widget(Members(name = 'members'))
-sm.add_widget(PurchaseSell(name = 'purchasesell'))
-sm.add_widget(PriceList(name = 'pricelist'))
-
+class HistoryPage(Screen):
+	pass
+class Content(MDBoxLayout):
+	pass
 class ContentNavigationDrawer(MDBoxLayout):
 	screen_manager = ObjectProperty()
 	nav_drawer = ObjectProperty()
 	pass
-
 class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.background_down = self.theme_cls.primary_light
 		self.font_color_down = [0.0, 0.0, 0.0, 0.87]
-		
 class TwoLineIconListItem(TwoLineIconListItem):
 	icon = StringProperty()
 	text_color = ListProperty((0, 0, 0, 1))
-
-
 class SwipeToDeleteItem(MDCardSwipe):
 	text = StringProperty()
 	secondary_text = StringProperty()
-
 class CustomOneLineIconListItem(OneLineListItem):
 	icon = StringProperty()
-
-	
 class DrawerList(ThemableBehavior, MDList):
 	def set_color_item(self, instance_item):
 		for item in self.children:
@@ -564,6 +595,15 @@ class DrawerList(ThemableBehavior, MDList):
 				item.text_color = self.theme_cls.text_color
 				break
 		instance_item.text_color = self.theme_cls.primary_color
+
+sm = ScreenManager(transition=FadeTransition())
+sm.add_widget(LoginScreen(name = 'loginscreen'))
+sm.add_widget(SignupScreen(name = 'signupscreen'))
+sm.add_widget(NavBar(name = 'application'))
+sm.add_widget(Members(name = 'members'))
+sm.add_widget(PurchaseSell(name = 'purchasesell'))
+sm.add_widget(PriceList(name = 'pricelist'))
+sm.add_widget(HistoryPage(name = 'historypage'))
 
 
 class MilkApp(MDApp):
@@ -580,13 +620,9 @@ class MilkApp(MDApp):
 		self.theme_cls.primary_palette = "Blue"
 		self.badgespage = Builder.load_string(KV)
 		return self.badgespage
-		
-	def debug(self):
-		self.login_check= True
-		self.redirect_page("pricelist")
 
 	def get_morning(self):
-		hour_day = datetime.datetime.now().hour
+		hour_day = datetime.now().hour
 		if (hour_day > 4) and (hour_day <= 12):
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.morning.active = True
 		else:
@@ -594,17 +630,18 @@ class MilkApp(MDApp):
 
 	def on_start(self):
 		self.login_check= False
-		
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_snf.disabled = True
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.disabled = True
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.disabled = True
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.purchase_submit.disabled = True
 		self.alluser()
+		self.allMembersList()
 		self.get_morning()
 		self.gen_op_list()
 		self.ratelist()
 		self.pricelist_header()
-		# print(self.badgespage.get_screen("application").ids.members.ids.membersList)
+		self.debug()
+		
 	
 	def allMembersList(self):
 		self.badgespage.get_screen("application").ids.members.ids.membersList.clear_widgets()
@@ -615,7 +652,7 @@ class MilkApp(MDApp):
 				)
 
 	def flash(self,msgtype, msgtext):
-		cancel_btn_username_dialogue = MDFlatButton(text = 'Retry',on_release = self.close_username_dialog)
+		cancel_btn_username_dialogue = MDFlatButton(text = 'Retry',on_release = self.close_popup_cancel_dialog)
 		self.dialog = MDDialog(title = msgtype,text = msgtext,size_hint = (0.7,0.2),buttons = [cancel_btn_username_dialogue])
 		self.dialog.open()
 
@@ -635,6 +672,14 @@ class MilkApp(MDApp):
 		f.close()
 		self.rateListJson = jsonData
 		return jsonData
+		
+	def get_history(self):
+		f = open(filename_history,"r")
+		fileData = f.read()
+		jsonData = json.loads(fileData) if (fileData != "") else {}
+		f.close()
+		self.history = jsonData
+		return True
 
 	def writeOnfile(self, filename, dataOfJson):
 		w= open(filename,"w")
@@ -661,12 +706,68 @@ class MilkApp(MDApp):
 				return False
 
 	def remove_customer(self, mobile):
+		self.forDelete = mobile
+		self.dialog = MDDialog(
+		title="Delete member ?",
+		text="are you want to delete member.user: \n"+self.allUser[mobile]['UserName'],
+			buttons=[
+				MDFlatButton(
+					text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
+				),
+				MDFlatButton(
+					text="Delete", text_color=self.theme_cls.primary_color, on_release = self.remove_customer_final
+				),
+			],
+		)
+		self.dialog.open()
+
+	def bill_history(self, mobile):
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageCustomer.title = mobile
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageCustomer1.text = self.allUser[mobile]['UserName']
+		self.dataTablePlot(mobile)
+		self.redirect_page("historypage")
+	
+	def dataTablePlot(self, mobile):
+		self.temp_user_show = mobile
+		self.get_history()
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageDataTable.clear_widgets()
+		data= []
+		historical_data = copy.deepcopy(self.history[mobile])
+		for f in copy.deepcopy(self.history[mobile]):
+			historical_data[f]["key"] = "[size=0]"+f+"[/size]"
+			data.append(tuple(historical_data[f].values()))
+		data_tables = MDDataTable(
+			column_data=[
+				("Date.", dp(20)),
+				("Sift", dp(15)),
+				("Type", dp(13)),
+				("SNF", dp(10)),
+				("FAT", dp(10)),
+				("Litre", dp(10)),
+				("Price", dp(13)),
+				("Remark", dp(40)),
+				("", dp(0)),
+			],
+			row_data=data
+		)
+		data_tables.bind(on_row_press=self.on_row_press)
+		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageDataTable.add_widget(data_tables)
+
+	def on_row_press(self, instance_table, instance_row):
+		filtered = instance_row.table.recycle_data[instance_row.table.recycle_data[instance_row.index]["range"][1]]['text'].split("[size=0]")[1].split("[/size]")[0]
+		generateBill = self.history[self.temp_user_show][filtered]
+		self.printSlip(self.temp_user_show, generateBill)
+
+	
+	def remove_customer_final(self, obj):
 		jsonData = self.alluser()
-		del jsonData[mobile]
+		del jsonData[self.forDelete]
 		self.allUserLen = len(jsonData)
 		self.allUser = jsonData
 		self.allMembersList()
 		self.writeOnfile(filename_members, json.dumps(jsonData))
+		self.dialog.dismiss()
+		self.forDelete = None
 		
 
 	def signup(self):
@@ -674,12 +775,12 @@ class MilkApp(MDApp):
 		signupMobile = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_mobile.text
 		signupUsername = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_username.text
 		signupAddress = self.badgespage.get_screen("application").ids.screen_manager.get_screen('signupscreen').ids.signup_address.text
-		if signupEmail.split() == [] or signupMobile.split() == [] or signupUsername.split() == []:
+		if signupMobile.split() == [] or signupUsername.split() == []:
 			self.flash('Required Input', 'Please check required input are missing.')
 		else:
 			signup_info = {"Email":signupEmail,"UserName":signupUsername, "Address":signupAddress}
 			if not self.save_to_json(signupMobile, signup_info, False):
-				self.flash('Already Exist','Mobile no '+signupMobile+'\nAlready exist.')				
+				self.flash('Already Exist','Identification no '+signupMobile+'\nAlready exist.')
 			else:
 				self.redirect_page("purchasesell")
 	
@@ -703,7 +804,7 @@ class MilkApp(MDApp):
 			listOfMenu.append(
 				{
 					"viewclass": "CustomOneLineIconListItem",
-					"text": "[b] "+secondtext+" [/b][/size]"+ format
+					"text": "[b] "+secondtext+" [/b]"+ format
 				}
 			)
 		for format in self.alluser():
@@ -735,10 +836,10 @@ class MilkApp(MDApp):
 			width_mult=5,
 			max_height=200
 		)
-		self.menu_snf.bind(on_release=self.menu_callback)
+		# self.menu_snf.bind(on_release=self.menu_callback)
 
-	def menu_callback(self, instance_menu, instance_menu_item):
-		print(instance_menu, instance_menu_item)
+	# def menu_callback(self, instance_menu, instance_menu_item):
+	# 	print(instance_menu, instance_menu_item)
 
 
 	def assign_cnf(self):
@@ -758,7 +859,9 @@ class MilkApp(MDApp):
 		)
 	
 
-	def close_username_dialog(self,obj):
+	def close_popup_cancel_dialog(self, obj):
+		self.forDelete = None
+		self.dataForPrint = None
 		self.dialog.dismiss()
 	
 	def top_menu_call(self):
@@ -766,7 +869,7 @@ class MilkApp(MDApp):
 
 	def pick_op_format(self, format):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_snf.disabled = False
-		self.output_ext_customer= format.split("[/size]")[1]
+		self.output_ext_customer= format.split("[/b]")[1]
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.search_field.text = (format.split("]")[1].split('[')[0]).strip()
 		
 	def set_item(self, text_item,type):
@@ -818,21 +921,24 @@ class MilkApp(MDApp):
 			
 		if bill_snf != "" and bill_cnf != "" and bill_customer != "" and bill_cow_b != "" and bill_litre != "" and bill_price != "" and self.output_ext_timing !="":
 			remark= self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_remark.text
-			self.printSlip(bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, self.output_ext_timing)
+			self.generateBill(bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, self.output_ext_timing)
 		else:
 			flash("Bill Generate","Something went wrong please try again later.")
 		
-	def printSlip(self, bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, sift):
-		print(
-			"bill_snf >>>| "+ bill_snf +
-			"bill_cnf >>>| "+ bill_cnf +
-			"bill_customer >>>| "+ bill_customer +
-			"bill_cow_b >>>| "+ bill_cow_b +
-			"bill_litre >>>| "+ bill_litre +
-			"bill_price >>>| "+ bill_price + 
-			"sift >>>|"+ sift
-		)
-
+	def generateBill(self, bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, sift):
+		today = datetime.today()
+		# Textual month, day and year	
+		d2 = today.strftime("%d-%m-%Y \n %I:%M %p")
+		d3 = today.strftime("%d%m%Y%I%M%S%p")
+		self.get_history()
+		recordsOfBill = {"date":d2, "sift":sift,"type":bill_cow_b, "snf":bill_snf, "cnf":bill_cnf, "weight":bill_litre, "price":bill_price, "remark":remark}
+		if bill_customer in self.history:
+			self.history[bill_customer][d3] = recordsOfBill
+		else:
+			self.history[bill_customer] = {d3:recordsOfBill}
+		self.writeOnfile(filename_history, json.dumps(self.history))
+		self.printSlip(bill_customer, recordsOfBill)
+		
 
 	def on_checkbox_active(self,type ,value, state):
 		if type !="timing":
@@ -848,6 +954,9 @@ class MilkApp(MDApp):
 		for i in self.rateListJson[self.pricelist_cowb_selection]:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.add_widget(MyToggleButton(text=f"{i}", group="tab_button", on_press=partial(self.on_loadPrice_list, f"{i}")))
 
+	def on_loadPrice_list(self, *args, **kwargs):
+		self.pricelist_snf_selection = (args[0])
+		self.load_price_table()
    
 	def on_checkbox_pricelist(self, value, state):
 		if state:
@@ -859,13 +968,9 @@ class MilkApp(MDApp):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.clear_widgets()
 		for i in self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection]:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDLabel(text=f"{i}", halign="center"))
-			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDTextField(text=f"{self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection][i]}", halign="center",helper_text='Required', helper_text_mode= 'on_error',required= True,input_filter= 'float',max_height=65,on_text_validate=partial(self.on_anything,f"{self.pricelist_cowb_selection}",f"{self.pricelist_snf_selection}", f"{i}" )))
-	
-	def on_loadPrice_list(self, *args, **kwargs):
-		self.pricelist_snf_selection = (args[0])
-		self.load_price_table()
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.pricelist_chart.add_widget(MDTextField(text=f"{self.rateListJson[self.pricelist_cowb_selection][self.pricelist_snf_selection][i]}", halign="center",helper_text='Required', helper_text_mode= 'on_error',required= True,input_filter= 'float',max_height=65,on_text_validate=partial(self.on_setPriceUpdate,f"{self.pricelist_cowb_selection}",f"{self.pricelist_snf_selection}", f"{i}" )))
 
-	def on_anything(self, *args, **kwargs):
+	def on_setPriceUpdate(self, *args, **kwargs):
 		cow_b= args[0]
 		snf = args[1]
 		cnf = args[2]
@@ -882,6 +987,46 @@ class MilkApp(MDApp):
 		else:
 			self.badgespage.get_screen('loginscreen').manager.current = 'loginscreen'
 		
+	def printSlip(self,Customer, data):
+		self.dataForPrint = data
+		aa = Content()
+		layout = MDGridLayout(cols = 4, row_force_default = True,row_default_height = 30)
+		aa.add_widget(MDLabel(text =data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" | "+data['sift'],size_hint_y= 0.1))
+		layout.add_widget(MDIcon(icon='account',halign="right",size_hint_x = None, width = 30))
+		layout.add_widget(MDLabel(text =Customer, size_hint_x = None,  width = 50))
+		layout.add_widget(MDIcon(icon='cow',halign="right",size_hint_x = None, width = 30))
+		layout.add_widget(MDLabel(text=data['type'], halign="right", size_hint_x = None,  width = 70))
+		layout.add_widget(MDLabel(text ="SNF", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text =data['snf']))
+		layout.add_widget(MDLabel(text ="FAT", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text =data['cnf'], halign="right", size_hint_x = None,  width = 70))
+		layout.add_widget(MDLabel(text ="Litre", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text =data['weight']))
+		layout.add_widget(MDLabel(text ="Price", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text =data['price']+"/-", halign="right", size_hint_x = None,  width = 70))
+		aa.add_widget(layout)
+		aa.add_widget(MDLabel(text =data['remark']+"dasjhdsah  adskjahds haksjdh ahsdkjah dahd akds",size_hint_y= 0.5, valign="middle"))
+		self.printBox =aa 
+		self.dialog = MDDialog(
+			title="Milk Shree Dairy",
+			type="custom",
+			content_cls=aa,
+			buttons=[
+				MDFlatButton(
+					text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
+				),
+				MDFlatButton(
+					text="Print", text_color=self.theme_cls.primary_color,  on_release = self.get_print
+				),
+			],
+		)
+		self.dialog.open()
+
+	def get_print(self, obj):
+		print("PrintSlip")
+		timestr = datetime.today().strftime("%Y%m%d_%H%M%S")
+		self.dialog.export_to_png("export.png".format(timestr))
+		os.system("lp -o fit-to-page -o orientation-requested=3 -o media=Custom.58x210mm export.png")
 
 if __name__ == '__main__':
 	MilkApp().run()
