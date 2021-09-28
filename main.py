@@ -620,6 +620,11 @@ class MilkApp(MDApp):
 		self.theme_cls.primary_palette = "Blue"
 		self.badgespage = Builder.load_string(KV)
 		return self.badgespage
+		
+	def debug(self):
+		self.login_check= True
+		self.bill_history("8987")
+		
 
 	def get_morning(self):
 		hour_day = datetime.now().hour
@@ -1023,7 +1028,7 @@ class MilkApp(MDApp):
 		self.dialog.open()
 
 	def get_print(self, obj):
-		print("PrintSlip")
+		# print("PrintSlip")
 		timestr = datetime.today().strftime("%Y%m%d_%H%M%S")
 		self.dialog.export_to_png("export.png".format(timestr))
 		os.system("lp -o fit-to-page -o orientation-requested=3 -o media=Custom.58x210mm export.png")
