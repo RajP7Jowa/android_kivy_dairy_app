@@ -31,22 +31,27 @@ ScreenManager:
 	LoginScreen:
 	NavBar:
 
-
+<NavDrawerToolbar@Label>
+	canvas:
+		Line:
+			points: self.x, self.y, self.x+self.width,self.y
+			
 <ContentNavigationDrawer>:
 	orientation: "vertical"
 	
 	spacing: "10dp"
 	
-	AnchorLayout:
-		anchor_x: "left"
-		size_hint_y: None
-		height: avatar.height
-		padding: "20dp"
-		Image:
-			id: avatar
-			size_hint: None, None
-			size: "56dp", "56dp"
-			source: "data/logo/kivy-icon-256.png"
+	BoxLayout:
+		size_hint: (1, .4)
+		NavDrawerToolbar:
+			padding: 10, 10
+			canvas.after:
+				Color:
+					rgba: (1, 1, 1, 1)
+				RoundedRectangle:
+					size: (self.size[1]-dp(14), self.size[1]-dp(14))
+					pos: (self.pos[0]+(self.size[0]-self.size[1])/2, self.pos[1]+dp(7))
+					source: "assets/logo.png"
 	MDLabel:
 		text: "Milk Shree Dairy"
 		font_style: "Button"
@@ -60,9 +65,11 @@ ScreenManager:
 		padding_x: "20dp"
 
 	ScrollView:
-
+		do_scroll_x: False
 		DrawerList:
 			id:md_list
+			OneLineIconListItem:
+				size_hint: (1, 0.04)
 			OneLineIconListItem:
 				text: "Add new member"
 				on_press:
