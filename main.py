@@ -119,6 +119,7 @@ ScreenManager:
 
 	MDTextField:
 		id:login_email
+		text:"admin"
 		size_hint : (0.7,0.1)
 		hint_text: 'User Name'
 		helper_text:'Required'
@@ -520,10 +521,10 @@ ScreenManager:
 <Content>
 	name: 'printContent'
 	orientation: "vertical"
-	spacing: "12dp"
-	padding: "12dp"
+	spacing: "7dp"
+	padding: "7dp"
 	size_hint_y: None
-	height: "170dp"
+	height: "150dp"
 	
 <NavBar>:
 	name: 'application'
@@ -630,7 +631,9 @@ class MilkApp(MDApp):
 		
 	def debug(self):
 		self.login_check= True
-		self.bill_history("8987")
+		self.dataTablePlot("111")
+		pass
+		
 		
 
 	def get_morning(self):
@@ -737,10 +740,10 @@ class MilkApp(MDApp):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageCustomer.title = mobile
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageCustomer1.text = self.allUser[mobile]['UserName']
 		self.dataTablePlot(mobile)
-		self.redirect_page("historypage")
 	
 	def dataTablePlot(self, mobile):
 		self.temp_user_show = mobile
+		self.redirect_page("historypage")
 		self.get_history()
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageDataTable.clear_widgets()
 		data= []
@@ -748,6 +751,7 @@ class MilkApp(MDApp):
 		for f in copy.deepcopy(self.history[mobile]):
 			historical_data[f]["key"] = "[size=0]"+f+"[/size]"
 			data.append(tuple(historical_data[f].values()))
+		print(data)
 		data_tables = MDDataTable(
 			column_data=[
 				("Date.", dp(20)),
@@ -1003,21 +1007,21 @@ class MilkApp(MDApp):
 		self.dataForPrint = data
 		aa = Content()
 		layout = MDGridLayout(cols = 4, row_force_default = True,row_default_height = 30)
-		aa.add_widget(MDLabel(text =data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" | "+data['sift'],size_hint_y= 0.1))
+		aa.add_widget(MDLabel(text =data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" | "+data['sift'],size_hint_y= 0.07))
 		layout.add_widget(MDIcon(icon='account',halign="right",size_hint_x = None, width = 30))
 		layout.add_widget(MDLabel(text =Customer, size_hint_x = None,  width = 50))
 		layout.add_widget(MDIcon(icon='cow',halign="right",size_hint_x = None, width = 30))
 		layout.add_widget(MDLabel(text=data['type'], halign="right", size_hint_x = None,  width = 70))
-		layout.add_widget(MDLabel(text ="SNF", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text ="SNF", size_hint_x = None,  width = 70))
 		layout.add_widget(MDLabel(text =data['snf']))
 		layout.add_widget(MDLabel(text ="FAT", size_hint_x = None,  width = 50))
 		layout.add_widget(MDLabel(text =data['cnf'], halign="right", size_hint_x = None,  width = 70))
-		layout.add_widget(MDLabel(text ="Litre", size_hint_x = None,  width = 50))
+		layout.add_widget(MDLabel(text ="Litre", size_hint_x = None,  width = 70))
 		layout.add_widget(MDLabel(text =data['weight']))
 		layout.add_widget(MDLabel(text ="Price", size_hint_x = None,  width = 50))
 		layout.add_widget(MDLabel(text =data['price']+"/-", halign="right", size_hint_x = None,  width = 70))
 		aa.add_widget(layout)
-		aa.add_widget(MDLabel(text =data['remark']+"dasjhdsah  adskjahds haksjdh ahsdkjah dahd akds",size_hint_y= 0.5, valign="middle"))
+		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.3, valign="middle"))
 		self.printBox =aa 
 		self.dialog = MDDialog(
 			title="Milk Shree Dairy",
@@ -1037,6 +1041,8 @@ class MilkApp(MDApp):
 	def get_print(self, obj):
 		# print("PrintSlip")
 		timestr = datetime.today().strftime("%Y%m%d_%H%M%S")
+		self.close_popup_cancel_dialog(obj)
+		self.dialog.ids.button_box.clear_widgets()
 		self.dialog.export_to_png("export.png".format(timestr))
 		os.system("lp -o fit-to-page -o orientation-requested=3 -o media=Custom.58x210mm export.png")
 
