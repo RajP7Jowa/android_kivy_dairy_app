@@ -1,1 +1,0 @@
-{"111": {"29092021121907AM": {"date": "29-09-2021 \n 12:19 AM", "sift": "Morning", "type": "cow", "snf": "7.6", "cnf": "3.2", "weight": "1", "price": "20.8", "remark": "444"}, "29092021122701AM": {"date": "29-09-2021 \n 12:27 AM", "sift": "Evening", "type": "cow", "snf": "7.6", "cnf": "4.4", "weight": "3", "price": "74.2", "remark": "33131"}}}
