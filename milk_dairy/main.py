@@ -645,6 +645,10 @@ class MilkApp(MDApp):
 		return self.badgespage
 		
 	def debug(self):
+		import webbrowser
+		new = 4
+		url = "intent://test%20printer%3Cbr%3E%3Cbig%3EBig%20title%3Cbr%3E%3Ccut%3E#Intent;scheme=quickprinter;package=pe.diegoveloper.printerserverapp;end;"
+		webbrowser.open(url, new=new)
 		pass
 		
 	def get_morning(self):
@@ -666,7 +670,6 @@ class MilkApp(MDApp):
 		self.gen_op_list()
 		self.ratelist()
 		self.pricelist_header()
-		self.selectPrinter()
 		self.debug()
 	
 	def allMembersList(self):
@@ -958,8 +961,8 @@ class MilkApp(MDApp):
 	def generateBill(self, bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, sift):
 		today = datetime.today()
 		# Textual month, day and year	
-		d2 = today.strftime("%d-%m-%Y \n %I:%M %p")
-		d3 = today.strftime("%d%m%Y%I%M%S%p")
+		d2 = today.strftime("%d-%m-%Y \n%I:%M %p")
+		d3 = today.strftime("%Y%m%d%H%M%S")
 		self.get_history()
 		recordsOfBill = {"date":d2, "sift":sift,"type":bill_cow_b, "snf":bill_snf, "cnf":bill_cnf, "weight":bill_litre, "price":bill_price, "remark":remark}
 		if bill_customer in self.history:
@@ -1060,20 +1063,14 @@ class MilkApp(MDApp):
 		self.printer = "66:22:1E:80:1B:AC"
 
 	def get_print(self, obj):
-		timestr = datetime.today().strftime("%Y%m%d_%H%M%S")
-		# self.dialog.export_to_png("export.png".format(timestr))
 		self.close_popup_cancel_dialog(obj)
 		self.dialog.ids.button_box.clear_widgets()
+
 		try:
-			# import bluetooth
-			from escpos import BluetoothConnection
-			from escpos.impl.epson import GenericESCPOS
-			# device = bluetooth.discover_devices()
-			printer = GenericESCPOS(BluetoothConnection(self.printer))
-			printer.init()
-			printer.text(self.printData)
-		except:
-			self.flash("Print Bill Slip","Something went wrong, please try again later.")
+			aaa = "https://google.com"
+			self.browser = WebView(aaa, enable_javascript = True)
+		except Exception as e:
+			self.flash("",str(e))
 
 
 if __name__ == '__main__':

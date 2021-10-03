@@ -4,10 +4,10 @@
 title = Milk Shree Dairy
 
 # (str) Package name
-package.name = milkShree
+package.name = SeetaRamji
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.milkShree
+package.domain = org.P7Jowa
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -28,7 +28,7 @@ source.include_exts = py,png,jpg,kv,atlas,txt
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.1
+version = 9
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.0.0,kivymd==0.104.2,pillow,sdl2_ttf==2.0.15,datetime,escpos
+requirements = python3,kivy==2.0.0,kivymd==0.104.2,pillow,sdl2_ttf==2.0.15,datetime,android
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -327,3 +327,4 @@ warn_on_root = 1
 #    Then, invoke the command line with the "demo" profile:
 #
 #buildozer --profile demo android debug
+android.permissions = INTERNET
