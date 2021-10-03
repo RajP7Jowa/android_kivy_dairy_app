@@ -85,16 +85,7 @@ ScreenManager:
 					root.screen_manager.current = "members"
 				IconLeftWidget:
 					icon: "account-details"
-			OneLineIconListItem:
-				id:tata2
-				text: "Price List"
-				hide:True
-				on_press:
-					root.nav_drawer.set_state("close")
-					root.screen_manager.current = "pricelist"
-				IconLeftWidget:
-					icon: "view-list-outline"
-
+			
 			OneLineIconListItem:
 				id:tata2
 				text: "Purchase"
@@ -104,12 +95,52 @@ ScreenManager:
 					root.screen_manager.current = "purchasesell"
 				IconLeftWidget:
 					icon: "beer-outline"
+			
+			OneLineIconListItem:
+				id:tata3
+				text: "Setting"
+				hide:True
+				on_press:
+					root.nav_drawer.set_state("close")
+					root.screen_manager.current = "setting"
+				IconLeftWidget:
+					icon: "cog"
+
+
 
 		
+<Setting>:
+	name:'setting'
+	MDIcon:
+		icon: 'cog'
+		icon_color: 0, 0, 0, 0
+		halign: 'center'
+		font_size: 100
+		pos_hint: {'center_y':0.80}
+
+	MDTextField:
+		id:settingpwd
+		text:"admin"
+		size_hint : (0.95,0.1)
+		hint_text: 'Security Key'
+		helper_text:'Required'
+		helper_text_mode:  'on_error'
+		icon_right: 'account-key'
+		icon_right_color: app.theme_cls.primary_color
+		required: True
+		pos_hint: {'center_y':0.50,'center_x':0.5}
+
+	MDRaisedButton:
+		text:'Access'
+		size_hint: (0.5,0.07)
+		pos_hint: {'center_y':0.37,'center_x':0.5}
+		on_press:
+			app.accessSetting()
+
 <LoginScreen>:
 	name:'loginscreen'
 	MDIcon:
-		icon: 'account-key'
+		icon: 'account'
 		icon_color: 0, 0, 0, 0
 		halign: 'center'
 		font_size: 100
@@ -145,7 +176,6 @@ ScreenManager:
 		pos_hint: {'center_y':0.37,'center_x':0.5}
 		on_press:
 			app.login()
-			
 
 <SignupScreen>:
 	name:'signupscreen'
@@ -318,7 +348,7 @@ ScreenManager:
 	MDGridLayout:
 		size_hint : (1,0.1)
 		pos_hint: {'center_y':0.65,'center_x':0.5}
-		cols: 3
+		cols: 2
 		MDBoxLayout:
 			MDGridLayout:
 				cols: 2
@@ -342,12 +372,25 @@ ScreenManager:
 					text_size: self.size
 					valign: 'middle'
 
-		MDLabel:
-			text: ' '
-			text_size: self.size
-			halign: 'center'
-			size_hint : (0.3,0.1)
+		MDBoxLayout:
+			size_hint : (1,0.1)
+			padding: dp(15),dp(0)
+			MDTextField:
+				id: field_snf
+				hint_text: 'SNF'
+				helper_text:'Required'
+				helper_text_mode:  'on_error'
+				required: True
+				input_filter: 'float'
+				on_focus: 
+					app.assign_snf()
+					if self.focus: app.menu_snf.open()
 
+
+	MDGridLayout:
+		size_hint : (1,0.1)
+		pos_hint: {'center_y':0.53,'center_x':0.5}
+		cols: 2
 		MDBoxLayout:
 			MDGridLayout:
 				cols: 2
@@ -370,35 +413,27 @@ ScreenManager:
 				MDLabel:
 					text: 'buffalo'
 					text_size: self.size
-					valign: 'middle'
+					valign: 'middle'	
 
+		MDGridLayout:
+			cols: 1
+			padding: dp(15),dp(0)
+			MDTextField:
+				id: field_cnf
+				hint_text: 'FAT'
+				helper_text:'Required'
+				helper_text_mode:  'on_error'
+				required: True
+				input_filter: 'float'
+				on_focus:
+					app.assign_cnf()
+					if self.focus: app.menu_cnf.open()
 	MDGridLayout:
 		size_hint : (1,0.1)
-		pos_hint: {'center_y':0.55,'center_x':0.5}
+		pos_hint: {'center_y':0.39,'center_x':0.5}
 		cols: 2
 		padding: dp(30),dp(0)
 		spacing: dp(30),dp(10)
-		MDTextField:
-			id: field_snf
-			hint_text: 'SNF'
-			helper_text:'Required'
-			helper_text_mode:  'on_error'
-			required: True
-			input_filter: 'float'
-			on_focus: 
-				app.assign_snf()
-				if self.focus: app.menu_snf.open()
-			
-		MDTextField:
-			id: field_cnf
-			hint_text: 'FAT'
-			helper_text:'Required'
-			helper_text_mode:  'on_error'
-			required: True
-			input_filter: 'float'
-			on_focus:
-				app.assign_cnf()
-				if self.focus: app.menu_cnf.open()
 
 		MDTextField:
 			id: field_litre
@@ -422,13 +457,13 @@ ScreenManager:
 		id: field_remark
 		size_hint : (.75,0.1)
 		hint_text: 'Remark'
-		pos_hint: {'center_y':0.34,'center_x':0.5}
+		pos_hint: {'center_y':0.30,'center_x':0.5}
 
 	MDRaisedButton:
 		text:'Submit'
 		id:purchase_submit
 		size_hint: (0.3,0.07)
-		pos_hint: {'center_y':0.20,'center_x':0.5}
+		pos_hint: {'center_y':0.19,'center_x':0.5}
 		on_press: app.purchaseSumbit()
 
 <PriceList>:
@@ -565,6 +600,8 @@ ScreenManager:
 					id:pricelist
 				HistoryPage:
 					id:history
+				Setting:
+					id:setting
 				
 			MDNavigationDrawer:
 				id: nav_drawer
@@ -591,6 +628,8 @@ class PurchaseSell(Screen):
 class PriceList(Screen):
 	pass
 class HistoryPage(Screen):
+	pass
+class Setting(Screen):
 	pass
 class Content(MDBoxLayout):
 	pass
@@ -627,6 +666,7 @@ sm.add_widget(Members(name = 'members'))
 sm.add_widget(PurchaseSell(name = 'purchasesell'))
 sm.add_widget(PriceList(name = 'pricelist'))
 sm.add_widget(HistoryPage(name = 'historypage'))
+sm.add_widget(Setting(name = 'setting'))
 
 
 class MilkApp(MDApp):
@@ -645,10 +685,6 @@ class MilkApp(MDApp):
 		return self.badgespage
 		
 	def debug(self):
-		import webbrowser
-		new = 4
-		url = "intent://test%20printer%3Cbr%3E%3Cbig%3EBig%20title%3Cbr%3E%3Ccut%3E#Intent;scheme=quickprinter;package=pe.diegoveloper.printerserverapp;end;"
-		webbrowser.open(url, new=new)
 		pass
 		
 	def get_morning(self):
@@ -788,7 +824,7 @@ class MilkApp(MDApp):
 	def on_row_press(self, instance_table, instance_row):
 		filtered = instance_row.table.recycle_data[instance_row.table.recycle_data[instance_row.index]["range"][1]]['text'].split("[size=0]")[1].split("[/size]")[0]
 		generateBill = self.history[self.temp_user_show][filtered]
-		self.printSlip(self.temp_user_show, generateBill)
+		self.printSlip(self.temp_user_show, generateBill, filtered)
 
 	
 	def remove_customer_final(self, obj):
@@ -829,7 +865,18 @@ class MilkApp(MDApp):
 			else:
 				self.flash('Incorrect Credentials',"Password not match.")
 	
- 
+	def accessSetting(self):
+		key = self.badgespage.get_screen("application").ids.screen_manager.get_screen('setting').ids.settingpwd.text
+		if key.split() == []:
+			self.flash('Required Credentials',"This key is required \n Hint: Milk SHREE Dairy")
+		else:
+			today = datetime.today()
+			d2 = today.strftime("%d")
+			if key == "shree"+d2:
+				self.redirect_page("pricelist")
+			else:
+				self.flash('Incorrect Credentials',"Password not match.")
+	
 	def gen_op_list(self, text="", search=False):
 		listOfMenu = []
 		def add_icon_item(format, secondtext):
@@ -970,7 +1017,7 @@ class MilkApp(MDApp):
 		else:
 			self.history[bill_customer] = {d3:recordsOfBill}
 		self.writeOnfile(filename_history, json.dumps(self.history))
-		self.printSlip(bill_customer, recordsOfBill)
+		self.printSlip(bill_customer, recordsOfBill, d3)
 		
 
 	def on_checkbox_active(self,type ,value, state):
@@ -1022,7 +1069,7 @@ class MilkApp(MDApp):
 		else:
 			self.badgespage.get_screen('loginscreen').manager.current = 'loginscreen'
 		
-	def printSlip(self,Customer, data):
+	def printSlip(self,Customer, data, slip):
 		self.dataForPrint = data
 		aa = Content()
 		layout = MDGridLayout(cols = 4, row_force_default = True,row_default_height = 30, spacing=dp(10))
@@ -1042,7 +1089,9 @@ class MilkApp(MDApp):
 		aa.add_widget(layout)
 		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="bottom",size_hint_y= 0.5	))
 		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.01, valign="bottom"))
-		self.printBox =aa 
+		widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center")
+		widget.bind(on_ref_press=self.print_it)
+		aa.add_widget(widget)
 		self.dialog = MDDialog(
 			title="Milk Shree Dairy",
 			type="custom",
@@ -1050,27 +1099,26 @@ class MilkApp(MDApp):
 			buttons=[
 				MDFlatButton(
 					text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
-				),
-				MDFlatButton(
-					text="Print", text_color=self.theme_cls.primary_color,  on_release = self.get_print
-				),
+				)
 			],
 		)
 		self.dialog.open()
-		self.printData = data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'] +"\n@ "+Customer+"          C/B:"+data['type']+'\n SNF:   '+data['snf']+"                 FAT:   "+data['cnf']+"\n Litre:   "+data['weight']+"              "+str(self.rateListJson[data['type']][data['snf']][data['cnf']])+"\n Total Price:   "+ data['price']+"/-\n"+data['remark']
+		self.printData = {"customer": Customer, "time":data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'],
+	 "slip": slip,"type":data['type'],"snf":data['snf'], "cnf":data['cnf'], "lit":data['weight'],"price":str(self.rateListJson[data['type']][data['snf']][data['cnf']]), "total": data['price'], 'remark':data['remark']}
 
-	def selectPrinter(self):
-		self.printer = "66:22:1E:80:1B:AC"
-
-	def get_print(self, obj):
-		self.close_popup_cancel_dialog(obj)
-		self.dialog.ids.button_box.clear_widgets()
-
-		try:
-			aaa = "https://google.com"
-			self.browser = WebView(aaa, enable_javascript = True)
-		except Exception as e:
-			self.flash("",str(e))
+	def print_it(self,a,b):
+		import webbrowser
+		texthtml = "%3Ctable%20border%3D%220%22%20align%3D%22center%22%20style%3D%22font-size%3A%20small%3B%20width%20%3A%20100%25%3B%20margin-bottom%3A10px%22%3E%20%3Ctr%3E%20%3Cth%20style%3D%27border-bottom%3A2px%20solid%20black%3Bpadding-bottom%3A%202px%3B%27%3EMilk%20Shree%20Dairy%2C%20%3Csmall%3ELinga%2C(Kareli)%3C%2Fsmall%3E%20%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Cth%20style%3D%27padding-top%3A3px%27%3E%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%26%23128100%3B%20"+self.printData['customer']+"%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%26%23128338%3B%20"+self.printData['time']+"%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Cth%20style%3D%27border-bottom%3A1px%20dotted%20black%27%3E%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%22%3E%23%20"+self.printData['slip']+"%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%22%20style%3D%27display%3A%20inline-block%27%3E%26%23128004%3B%20"+self.printData['type']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20SNF%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['snf']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20FAT%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['cnf']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20Lit%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['lit']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20Price%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['price']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27border-bottom%3A1px%20dotted%20black%27%3E%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27text-align%3A%20center%3B%27%3ETotal%20Price%20%20%20%20"+self.printData['total']+"%3A%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27text-align%3A%20center%3B%27%3E"+self.printData['remark']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E";
+		webbrowser.open("https://rajp7jowa.github.io/krashishakti/milkshree.html?intent://"+texthtml+"#Intent;scheme=quickprinter;package=pe.diegoveloper.printerserverapp;end;")			
+		print(os.getcwd())
+		# MDLabel:
+		# 	id: need_help_link
+		# 	font_size: 20
+		# 	markup: True
+		# 	text: 'Need help [ref=some]someweblink[/ref]'
+		# 	on_ref_press:
+		# 		import webbrowser
+		# 		webbrowser.open('http://google.com')			
 
 
 if __name__ == '__main__':

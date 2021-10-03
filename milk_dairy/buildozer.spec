@@ -4,7 +4,7 @@
 title = Milk Shree Dairy
 
 # (str) Package name
-package.name = SeetaRamji
+package.name = jyoti
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.P7Jowa
@@ -36,7 +36,7 @@ version = 9
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.0.0,kivymd==0.104.2,pillow,sdl2_ttf==2.0.15,datetime,android
+requirements = python3,kivy==2.0.0,kivymd==0.104.2,pillow,sdl2_ttf==2.0.15,datetime
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
