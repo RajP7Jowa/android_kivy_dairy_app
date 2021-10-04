@@ -1088,7 +1088,7 @@ class MilkApp(MDApp):
 		layout.add_widget(MDLabel(text = str(self.rateListJson[data['type']][data['snf']][data['cnf']]),halign="right"))
 		aa.add_widget(MDLabel(text ='    ',size_hint_y= 0.5,valign="middle"))
 		aa.add_widget(layout)
-		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="middle",size_hint_y= 0.5))
+		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="middle",size_hint_y= 0.3))
 		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.4, valign="middle"))
 		widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center",size_hint_y= 0.01)
 		widget.bind(on_ref_press=self.print_it)
