@@ -120,7 +120,6 @@ ScreenManager:
 
 	MDTextField:
 		id:settingpwd
-		text:"admin"
 		size_hint : (0.95,0.1)
 		hint_text: 'Security Key'
 		helper_text:'Required'
@@ -128,6 +127,7 @@ ScreenManager:
 		icon_right: 'account-key'
 		icon_right_color: app.theme_cls.primary_color
 		required: True
+		password:True
 		pos_hint: {'center_y':0.50,'center_x':0.5}
 
 	MDRaisedButton:
@@ -167,7 +167,7 @@ ScreenManager:
 		icon_right: 'key-variant'
 		icon_right_color: app.theme_cls.primary_color
 		required: True
-		
+		password:True
 		pos_hint: {'center_y':0.50,'center_x':0.5}
 
 	MDRaisedButton:
@@ -568,8 +568,8 @@ ScreenManager:
 <Content>
 	name: 'printContent'
 	orientation: "vertical"
-	spacing: "7dp"
-	padding: "7dp"
+	padding: dp(0),dp(0)
+	spacing: dp(10),dp(10)
 	size_hint_y: None
 	height: "150dp"
 
@@ -1086,10 +1086,11 @@ class MilkApp(MDApp):
 		layout.add_widget(MDLabel(text =data['weight']))
 		layout.add_widget(MDLabel(text ="Price",halign="right"))
 		layout.add_widget(MDLabel(text = str(self.rateListJson[data['type']][data['snf']][data['cnf']]),halign="right"))
+		aa.add_widget(MDLabel(text ='    ',size_hint_y= 0.5,valign="middle"))
 		aa.add_widget(layout)
-		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="bottom",size_hint_y= 0.5	))
-		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.01, valign="bottom"))
-		widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center")
+		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="middle",size_hint_y= 0.5))
+		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.4, valign="middle"))
+		widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center",size_hint_y= 0.01)
 		widget.bind(on_ref_press=self.print_it)
 		aa.add_widget(widget)
 		self.dialog = MDDialog(
@@ -1108,7 +1109,8 @@ class MilkApp(MDApp):
 
 	def print_it(self,a,b):
 		import webbrowser
-		texthtml = "%3Ctable%20border%3D%220%22%20align%3D%22center%22%20style%3D%22font-size%3A%20small%3B%20width%20%3A%20100%25%3B%20margin-bottom%3A10px%22%3E%20%3Ctr%3E%20%3Cth%20style%3D%27border-bottom%3A2px%20solid%20black%3Bpadding-bottom%3A%202px%3B%27%3EMilk%20Shree%20Dairy%2C%20%3Csmall%3ELinga%2C(Kareli)%3C%2Fsmall%3E%20%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Cth%20style%3D%27padding-top%3A3px%27%3E%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%26%23128100%3B%20"+self.printData['customer']+"%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%26%23128338%3B%20"+self.printData['time']+"%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Cth%20style%3D%27border-bottom%3A1px%20dotted%20black%27%3E%3C%2Fth%3E%20%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%22%3E%23%20"+self.printData['slip']+"%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%22%20style%3D%27display%3A%20inline-block%27%3E%26%23128004%3B%20"+self.printData['type']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20SNF%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['snf']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20FAT%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['cnf']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20Lit%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20left%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['lit']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3Ctd%3E%20%3Ctable%20border%3D%220%22%20style%3D%22font-size%3A%20small%3B%20width%3A%20100%25%3B%22%3E%20%3Ctr%3E%20%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20Price%3A%20%3C%2Ftd%3E%3Ctd%20style%3D%22text-align%3A%20right%3B%20width%3A%2050%25%3B%22%3E%20"+self.printData['price']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E%20%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27border-bottom%3A1px%20dotted%20black%27%3E%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27text-align%3A%20center%3B%27%3ETotal%20Price%20%20%20%20"+self.printData['total']+"%3A%3C%2Ftd%3E%3C%2Ftr%3E%3Ctr%3E%20%3Ctd%20style%3D%27text-align%3A%20center%3B%27%3E"+self.printData['remark']+"%3C%2Ftd%3E%3C%2Ftr%3E%3C%2Ftable%3E";
+		# texthtml = "<table border='0' align='center' style='font-size: small; width : 100%; margin-bottom:10px'> <tr> <th style='border-bottom:2px solid black;padding-bottom: 2px;'>Milk Shree Dairy, <small>Linga,(Kareli)</small> </th> </tr><tr> <th style='padding-top:3px'></th> </tr><tr> <td> &#128100; " + self.printData['customer'] +" </td></tr><tr> <td> &#128338; " + self.printData['time'] +"</td></tr><tr> <th style='border-bottom:1px dotted black'></th> </tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left;'># " + self.printData['slip'] +" </td><td style='text-align: right;' style='display: inline-block'>&#128004; " + self.printData['type'] +"</td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> SNF: </td><td style='text-align: left; width: 50%;'> " + self.printData['snf'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> FAT: </td><td style='text-align: right; width: 50%;'> " + self.printData['cnf'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> Lit: </td><td style='text-align: left; width: 50%;'> " + self.printData['lit'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> Price: </td><td style='text-align: right; width: 50%;'> " + self.printData['price'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td style='border-bottom:1px dotted black'></td></tr><tr> <td style='text-align: center;'>Total Price    " +self.printData['total'] +":</td></tr><tr> <td style='text-align: center;'>"+ self.printData['remark']+ "</td></tr></table>"
+		texthtml = "<CENTER><BOLD>Milk Shree Dairy, <NORMAL><SMALL>Linga,(Kareli)<BR><CENTER><LINE><LEFT><SMALL>C: "+ self.printData['customer'] +"<BR><LEFT><SMALL>T: "+self.printData['time']+"<BR><LEFT><SMALL>#: "+self.printData['slip']+"        <RIGHT><SMALL>C/B: "+self.printData['type']+"<BR><LEFT><SMALL>SNF: "+self.printData['snf']+"              <RIGHT><SMALL>FAT: "+self.printData['cnf']+"<BR><LEFT><SMALL>Lit: "+self.printData['lit']+"              <RIGHT><SMALL>Price: "+self.printData['price']+"<BR><CENTER><LINE><CENTER><BOLD>Total Price: "+self.printData['total']+"<BR><NORMAL>"+self.printData['remark']
 		webbrowser.open("https://rajp7jowa.github.io/krashishakti/milkshree.html?intent://"+texthtml+"#Intent;scheme=quickprinter;package=pe.diegoveloper.printerserverapp;end;")			
 		print(os.getcwd())
 		# MDLabel:

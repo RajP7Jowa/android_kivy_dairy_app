@@ -4,7 +4,7 @@
 title = Milk Shree Dairy
 
 # (str) Package name
-package.name = jyoti
+package.name = raj
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.P7Jowa
