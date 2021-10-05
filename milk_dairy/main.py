@@ -5,7 +5,7 @@ from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.list import OneLineListItem,TwoLineIconListItem, MDList
+from kivymd.uix.list import OneLineListItem,TwoLineIconListItem, MDList,TwoLineAvatarIconListItem
 from kivymd.uix.button import MDFlatButton,MDRectangleFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
@@ -51,13 +51,13 @@ ScreenManager:
 					pos: (self.pos[0]+(self.size[0]-self.size[1])/2, self.pos[1]+dp(7))
 					source: "assets/logo.png"
 	MDLabel:
-		text: "Milk Shree Dairy"
+		text: "Milk Shree"
 		font_style: "Button"
 		adaptive_height: True
 		padding_x: "20dp"
 		
 	MDLabel:
-		text: "Linga, Kareli"
+		text: "Dairy"
 		font_style: "Caption"
 		adaptive_height: True
 		padding_x: "20dp"
@@ -243,24 +243,15 @@ ScreenManager:
 
 <SwipeToDeleteItem>:
 	size_hint_y: None
-	height: content.height
-	
-    MDCardSwipeLayerBox:
-        padding: "8dp"
-
-        MDIconButton:
-            icon: "trash-can"
-            pos_hint: {"center_y": .5}
-            on_press: app.remove_customer(root.secondary_text)
-			
-	MDCardSwipeFrontBox:
-
-		TwoLineListItem:
-			id: content
-			text: root.text
-			secondary_text: root.secondary_text
-			_no_ripple_effect: True
-			on_release: app.bill_history(root.secondary_text)
+	text: "T--"
+    secondary_text: "--"
+	on_release: app.bill_history(root.secondary_text)
+	IconLeftWidget:
+		icon:"account"
+    IconRightWidget:
+        icon: "trash-can"
+        on_press: app.remove_customer(root.secondary_text)
+    
 		
 
 <Members>:
@@ -645,7 +636,7 @@ class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
 class TwoLineIconListItem(TwoLineIconListItem):
 	icon = StringProperty()
 	text_color = ListProperty((0, 0, 0, 1))
-class SwipeToDeleteItem(MDCardSwipe):
+class SwipeToDeleteItem(TwoLineAvatarIconListItem):
 	text = StringProperty()
 	secondary_text = StringProperty()
 class CustomOneLineIconListItem(OneLineListItem):
@@ -706,6 +697,7 @@ class MilkApp(MDApp):
 		self.gen_op_list()
 		self.ratelist()
 		self.pricelist_header()
+		self.get_history()
 		self.debug()
 	
 	def allMembersList(self):
@@ -753,19 +745,17 @@ class MilkApp(MDApp):
 		return
 
 	def save_to_json(self,mobile, signup, checkonly):
-		jsonData = self.alluser()
-		if mobile in jsonData:
+		if mobile in self.allUser:
 			if checkonly:
-				return jsonData[mobile]
+				return self.allUser[mobile]
 			else:
 				return False
 		else:
 			if not checkonly:
-				jsonData[mobile]= signup
-				self.allUserLen = len(jsonData)
-				self.allUser = jsonData
+				self.allUser[mobile]= signup
+				self.allUserLen = len(self.allUser)
 				self.allMembersList()
-				self.writeOnfile(filename_members, json.dumps(jsonData))
+				self.writeOnfile(filename_members, json.dumps(self.allUser))
 				return True
 			else:
 				return False
@@ -774,7 +764,7 @@ class MilkApp(MDApp):
 		self.forDelete = mobile
 		self.dialog = MDDialog(
 		title="Delete member ?",
-		text="are you want to delete member.user: \n"+self.allUser[mobile]['UserName'],
+		text="Are you want to delete?.\n Member:"+self.allUser[mobile]['UserName']+" "+str(mobile),
 			buttons=[
 				MDFlatButton(
 					text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
@@ -794,7 +784,6 @@ class MilkApp(MDApp):
 	def dataTablePlot(self, mobile):
 		try:
 			self.temp_user_show = mobile
-			self.get_history()
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("historypage").ids.historypageDataTable.clear_widgets()
 			data= []
 			historical_data = copy.deepcopy(self.history[mobile])
@@ -828,12 +817,10 @@ class MilkApp(MDApp):
 
 	
 	def remove_customer_final(self, obj):
-		jsonData = self.alluser()
-		del jsonData[self.forDelete]
-		self.allUserLen = len(jsonData)
-		self.allUser = jsonData
+		del self.allUser[self.forDelete]
+		self.allUserLen = len(self.allUser)
 		self.allMembersList()
-		self.writeOnfile(filename_members, json.dumps(jsonData))
+		self.writeOnfile(filename_members, json.dumps(self.allUser))
 		self.dialog.dismiss()
 		self.forDelete = None
 		
@@ -868,14 +855,14 @@ class MilkApp(MDApp):
 	def accessSetting(self):
 		key = self.badgespage.get_screen("application").ids.screen_manager.get_screen('setting').ids.settingpwd.text
 		if key.split() == []:
-			self.flash('Required Credentials',"This key is required \n Hint: Milk SHREE Dairy")
+			self.flash('Required Security',"This key is required \nHint: Milk SHREE Dairy")
 		else:
 			today = datetime.today()
 			d2 = today.strftime("%d")
 			if key == "shree"+d2:
 				self.redirect_page("pricelist")
 			else:
-				self.flash('Incorrect Credentials',"Password not match.")
+				self.flash('Incorrect Security',"Password not match.\nHint: Milk SHREE Dairy")
 	
 	def gen_op_list(self, text="", search=False):
 		listOfMenu = []
@@ -1010,7 +997,6 @@ class MilkApp(MDApp):
 		# Textual month, day and year	
 		d2 = today.strftime("%d-%m-%Y \n%I:%M %p")
 		d3 = today.strftime("%Y%m%d%H%M%S")
-		self.get_history()
 		recordsOfBill = {"date":d2, "sift":sift,"type":bill_cow_b, "snf":bill_snf, "cnf":bill_cnf, "weight":bill_litre, "price":bill_price, "remark":remark}
 		if bill_customer in self.history:
 			self.history[bill_customer][d3] = recordsOfBill
@@ -1030,7 +1016,6 @@ class MilkApp(MDApp):
 
 	def pricelist_header(self):
 		self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.clear_widgets()
-		self.ratelist()
 		for i in self.rateListJson[self.pricelist_cowb_selection]:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.tabs_price.add_widget(MyToggleButton(text=f"{i}", group="tab_button"))
 
@@ -1109,10 +1094,9 @@ class MilkApp(MDApp):
 
 	def print_it(self,a,b):
 		import webbrowser
-		# texthtml = "<table border='0' align='center' style='font-size: small; width : 100%; margin-bottom:10px'> <tr> <th style='border-bottom:2px solid black;padding-bottom: 2px;'>Milk Shree Dairy, <small>Linga,(Kareli)</small> </th> </tr><tr> <th style='padding-top:3px'></th> </tr><tr> <td> &#128100; " + self.printData['customer'] +" </td></tr><tr> <td> &#128338; " + self.printData['time'] +"</td></tr><tr> <th style='border-bottom:1px dotted black'></th> </tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left;'># " + self.printData['slip'] +" </td><td style='text-align: right;' style='display: inline-block'>&#128004; " + self.printData['type'] +"</td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> SNF: </td><td style='text-align: left; width: 50%;'> " + self.printData['snf'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> FAT: </td><td style='text-align: right; width: 50%;'> " + self.printData['cnf'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> Lit: </td><td style='text-align: left; width: 50%;'> " + self.printData['lit'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> Price: </td><td style='text-align: right; width: 50%;'> " + self.printData['price'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td style='border-bottom:1px dotted black'></td></tr><tr> <td style='text-align: center;'>Total Price    " +self.printData['total'] +":</td></tr><tr> <td style='text-align: center;'>"+ self.printData['remark']+ "</td></tr></table>"
-		texthtml = "<CENTER><BOLD>Milk Shree Dairy, <NORMAL><SMALL>Linga,(Kareli)<BR><CENTER><LINE><LEFT><SMALL>C: "+ self.printData['customer'] +"<BR><LEFT><SMALL>T: "+self.printData['time']+"<BR><LEFT><SMALL>#: "+self.printData['slip']+"        <RIGHT><SMALL>C/B: "+self.printData['type']+"<BR><LEFT><SMALL>SNF: "+self.printData['snf']+"              <RIGHT><SMALL>FAT: "+self.printData['cnf']+"<BR><LEFT><SMALL>Lit: "+self.printData['lit']+"              <RIGHT><SMALL>Price: "+self.printData['price']+"<BR><CENTER><LINE><CENTER><BOLD>Total Price: "+self.printData['total']+"<BR><NORMAL>"+self.printData['remark']
+		# texthtml = "<table border='0' align='center' style='font-size: small; width : 100%; margin-bottom:10px'> <tr> <th style='border-bottom:2px solid black;padding-bottom: 2px;'>Milk Shree Dairy, Linga,(Kareli)</small> </th> </tr><tr> <th style='padding-top:3px'></th> </tr><tr> <td> &#128100; " + self.printData['customer'] +" </td></tr><tr> <td> &#128338; " + self.printData['time'] +"</td></tr><tr> <th style='border-bottom:1px dotted black'></th> </tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left;'># " + self.printData['slip'] +" </td><td style='text-align: right;' style='display: inline-block'>&#128004; " + self.printData['type'] +"</td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> SNF: </td><td style='text-align: left; width: 50%;'> " + self.printData['snf'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> FAT: </td><td style='text-align: right; width: 50%;'> " + self.printData['cnf'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: left; width: 50%;'> Lit: </td><td style='text-align: left; width: 50%;'> " + self.printData['lit'] +"</td></tr></table> </td><td> <table border='0' style='font-size: small; width: 100%;'> <tr> <td style='text-align: right; width: 50%;'> Price: </td><td style='text-align: right; width: 50%;'> " + self.printData['price'] +"</td></tr></table> </td></tr></table> </td></tr><tr> <td style='border-bottom:1px dotted black'></td></tr><tr> <td style='text-align: center;'>Total Price    " +self.printData['total'] +":</td></tr><tr> <td style='text-align: center;'>"+ self.printData['remark']+ "</td></tr></table>"
+		texthtml = "<CENTER><BOLD>Milk Shree Dairy<NORMAL><BR><CENTER><LINE><LEFT>C: "+ self.printData['customer'] +"<BR><LEFT>T: "+self.printData['time']+"<BR><LEFT>#: "+self.printData['slip']+"        <RIGHT>C/B: "+self.printData['type']+"<BR><LEFT>SNF: "+self.printData['snf']+"              <RIGHT>FAT: "+self.printData['cnf']+"<BR><LEFT>Lit: "+self.printData['lit']+"              <RIGHT>Price: "+self.printData['price']+"<BR><CENTER><LINE><CENTER><BOLD>Total Price: "+self.printData['total']+"<BR><NORMAL>"+self.printData['remark']
 		webbrowser.open("https://rajp7jowa.github.io/krashishakti/milkshree.html?intent://"+texthtml+"#Intent;scheme=quickprinter;package=pe.diegoveloper.printerserverapp;end;")			
-		print(os.getcwd())
 		# MDLabel:
 		# 	id: need_help_link
 		# 	font_size: 20
