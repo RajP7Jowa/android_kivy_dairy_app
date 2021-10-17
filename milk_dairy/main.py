@@ -134,7 +134,7 @@ ScreenManager:
 
 	MDTextField:
 		id:login_email
-		text:"admin"
+		text:"shree"
 		size_hint : (0.95,0.1)
 		hint_text: 'User Name'
 		helper_text:'Required'
@@ -576,7 +576,7 @@ ScreenManager:
 			elevation: 10
 			title: "Milk Dairy App"
 			left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
-			right_action_items:[['account',lambda x: app.redirect_page('members')]]
+			right_action_items:[['cog',lambda x: app.redirect_page('setting')]]
 			md_bg_color: 0,0,100/255,1
 
 		MDNavigationLayout:
@@ -618,6 +618,7 @@ class COWList(Screen):
 class BUFFALOList(Screen):
 	pass
 class Tab(MDFloatLayout, MDTabsBase):
+	text = StringProperty()
 	pass
 class ContentNavigationDrawer(MDBoxLayout):
 	screen_manager = ObjectProperty()
@@ -669,8 +670,7 @@ class MilkApp(MDApp):
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.screen_manager_tab_price.get_screen("cowlist").ids.tabs_cow.add_widget(Tab(title=f"{i}"))
 		for i in self.rateListJson['buffalo']:
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("pricelist").ids.screen_manager_tab_price.get_screen("buffalolist").ids.tabs_buffalo.add_widget(Tab(title=f"{i}"))
-		self.load_price_table("cow","7.6")
-		self.load_price_table("buffalo","8.5")
+		
 
 	def get_morning(self):
 		hour_day = datetime.now().hour
@@ -680,44 +680,59 @@ class MilkApp(MDApp):
 			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.evening.active = True
 
 	def on_start(self):
-		self.login_check= True
-		self.redirect_page("pricelist")
-		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.disabled = True
-		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.disabled = True
-		self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.purchase_submit.disabled = True
-		self.get_morning()
-		self.ratelist()
-		self.debug()
+		try:
+			self.ratelist()
+			self.get_morning()
+			self.login_check= False
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_cnf.disabled = True
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.disabled = True
+			self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.purchase_submit.disabled = True
+			self.debug()
+			self.load_price_table("cow","7.6")
+			self.load_price_table("buffalo","8.5")
+		except Exception as e:
+			self.flash('Error',str(e))
 	
 	def flash(self,msgtype, msgtext):
 		self.dialog = MDDialog(title = msgtype,text = msgtext,size_hint = (0.7,0.2))
 		self.dialog.open()
 
 	def ratelist(self):
-		f = open(filename_ratelist,"r")
-		fileData = f.read()
-		jsonData = json.loads(fileData) if (fileData != "") else {}
-		f.close()
-		self.rateListJson = jsonData
-		return jsonData
+		try:
+			f = open(filename_ratelist,"r")
+			fileData = f.read()
+			jsonData = json.loads(fileData) if (fileData != "") else {}
+			f.close()
+			self.rateListJson = jsonData
+			return jsonData
+		except:
+			self.flash('Error',"file read")
+			return {}
+
 
 	def writeOnfile(self, filename, dataOfJson):
-		w= open(filename,"w")
-		w.write(dataOfJson)
-		w.close()
+		try:
+			w= open(filename,"w")
+			w.write(dataOfJson)
+			w.close()
+		except:
+			self.flash('Error',"Write on file")
 		return
 
 	def login(self):
-		loginEmail = self.badgespage.get_screen('loginscreen').ids.login_email.text
-		loginPassword = self.badgespage.get_screen('loginscreen').ids.login_password.text
-		if loginEmail.split() == [] and loginPassword.split() ==[]:
-			self.flash('Required Credentials',"Please filled out required input.")
-		else:
-			if loginEmail == "shree" and loginPassword == "123":
-				self.login_check=True
-				self.redirect_page("purchasesell")
+		try:
+			loginEmail = self.badgespage.get_screen('loginscreen').ids.login_email.text
+			loginPassword = self.badgespage.get_screen('loginscreen').ids.login_password.text
+			if loginEmail.split() == [] and loginPassword.split() ==[]:
+				self.flash('Required Credentials',"Please filled out required input.")
 			else:
-				self.flash('Incorrect Credentials',"Password not match.")
+				if loginEmail == "shree" and loginPassword == "123":
+					self.login_check=True
+					self.redirect_page("purchasesell")
+				else:
+					self.flash('Incorrect Credentials',"Password not match.")
+		except :
+			self.flash('Incorrect Credentials',"Password not match.")
 	
 	def accessSetting(self):
 		key = self.badgespage.get_screen("application").ids.screen_manager.get_screen('setting').ids.settingpwd.text
@@ -784,37 +799,40 @@ class MilkApp(MDApp):
 
 		
 	def purchaseSumbit(self):
-		bill_snf = ""
-		bill_cnf = ""
-		bill_customer = ""
-		bill_cow_b = ""
-		bill_litre = ""
-		bill_price = ""
-		if self.output_ext_snf != "" and self.output_ext_snf != 0:
-			bill_snf = str(self.output_ext_snf)
+		try:
+			bill_snf = ""
+			bill_cnf = ""
+			bill_customer = ""
+			bill_cow_b = ""
+			bill_litre = ""
+			bill_price = ""
+			if self.output_ext_snf != "" and self.output_ext_snf != 0:
+				bill_snf = str(self.output_ext_snf)
 
-		if self.output_ext_cnf != "" and self.output_ext_cnf != 0:
-			bill_cnf = str(self.output_ext_cnf)
-		
-		if self.output_ext_customer != "" and self.output_ext_customer != 0:
-			bill_customer = str(self.output_ext_customer)
-
-		if self.output_ext_cow_buffalo != "" and self.output_ext_cow_buffalo != 0:
-			bill_cow_b = self.output_ext_cow_buffalo
+			if self.output_ext_cnf != "" and self.output_ext_cnf != 0:
+				bill_cnf = str(self.output_ext_cnf)
 			
-		litre = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.text
-		if litre != "" and litre != 0:
-			bill_litre = str(litre)
+			if self.output_ext_customer != "" and self.output_ext_customer != 0:
+				bill_customer = str(self.output_ext_customer)
 
-		bill_price = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_price.text
-		if bill_price != "" and bill_price != 0:
-			bill_price = str(bill_price)
-			
-		if bill_snf != "" and bill_cnf != "" and bill_customer != "" and bill_cow_b != "" and bill_litre != "" and bill_price != "" and self.output_ext_timing !="":
-			remark= self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_remark.text
-			self.generateBill(bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, self.output_ext_timing)
-		else:
-			self.flash("Bill Generate","Something went wrong please try again later.")
+			if self.output_ext_cow_buffalo != "" and self.output_ext_cow_buffalo != 0:
+				bill_cow_b = self.output_ext_cow_buffalo
+				
+			litre = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_litre.text
+			if litre != "" and litre != 0:
+				bill_litre = str(litre)
+
+			bill_price = self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_price.text
+			if bill_price != "" and bill_price != 0:
+				bill_price = str(bill_price)
+				
+			if bill_snf != "" and bill_cnf != "" and bill_customer != "" and bill_cow_b != "" and bill_litre != "" and bill_price != "" and self.output_ext_timing !="":
+				remark= self.badgespage.get_screen("application").ids.screen_manager.get_screen("purchasesell").ids.field_remark.text
+				self.generateBill(bill_snf,bill_cnf, bill_customer,bill_cow_b, bill_litre, bill_price, remark, self.output_ext_timing)
+			else:
+				self.flash("Bill Generate","Something went wrong please try again later.")
+		except:
+			self.flash("Generate Bill","Something went wrong to process.")
 		
 	# def sendHistory(self,data):
 	# 	pass
@@ -887,43 +905,45 @@ class MilkApp(MDApp):
 			self.badgespage.get_screen('loginscreen').manager.current = 'loginscreen'
 		
 	def printSlip(self,Customer, data, slip):
-		self.dataForPrint = data
-		aa = Content()
-		layout = MDGridLayout(cols = 4, row_force_default = True,row_default_height = 30, spacing=dp(10))
-		aa.add_widget(MDLabel(text =data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'],valign="bottom",size_hint_y= 0.1))
-		layout.add_widget(MDIcon(icon='account'))
-		if not(Customer.split() == []):
-			layout.add_widget(MDLabel(text =Customer))
-		layout.add_widget(MDIcon(icon='cow',halign="right"))
-		layout.add_widget(MDLabel(text=data['type'],halign="right"))
-		layout.add_widget(MDLabel(text ="SNF"))
-		layout.add_widget(MDLabel(text =data['snf']))
-		layout.add_widget(MDLabel(text ="FAT",halign="right"))
-		layout.add_widget(MDLabel(text =data['cnf'],halign="right"))
-		layout.add_widget(MDLabel(text ="Litre"))
-		layout.add_widget(MDLabel(text =data['weight']))
-		layout.add_widget(MDLabel(text ="Price",halign="right"))
-		layout.add_widget(MDLabel(text = str(self.rateListJson[data['type']][data['snf']][data['cnf']]),halign="right"))
-		aa.add_widget(MDLabel(text ='	',size_hint_y= 0.5,valign="middle"))
-		aa.add_widget(layout)
-		aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="middle",size_hint_y= 0.3))
-		aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.3, valign="middle"))
-		widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center",size_hint_y= 0.01)
-		widget.bind(on_ref_press=self.print_it)
-		aa.add_widget(widget)
-		self.dialog = MDDialog(
-			title="Milk Shree Dairy",
-			type="custom",
-			content_cls=aa,
-			buttons=[
-				MDFlatButton(
-					text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
-				)
-			],
-		)
-		self.dialog.open()
-		self.printData = {"customer": Customer, "time":data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'],
-	 "slip": slip,"type":data['type'],"snf":data['snf'], "cnf":data['cnf'], "lit":data['weight'],"price":str(self.rateListJson[data['type']][data['snf']][data['cnf']]), "total": data['price'], 'remark':data['remark']}
+		try:
+			self.dataForPrint = data
+			aa = Content()
+			layout = MDGridLayout(cols = 4, row_force_default = True,row_default_height = 30, spacing=dp(10))
+			aa.add_widget(MDLabel(text =data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'],valign="bottom",size_hint_y= 0.1))
+			layout.add_widget(MDIcon(icon='account'))
+			if not(Customer.split() == []):
+				layout.add_widget(MDLabel(text =Customer))
+			layout.add_widget(MDIcon(icon='cow',halign="right"))
+			layout.add_widget(MDLabel(text=data['type'],halign="right"))
+			layout.add_widget(MDLabel(text ="SNF"))
+			layout.add_widget(MDLabel(text =data['snf']))
+			layout.add_widget(MDLabel(text ="FAT",halign="right"))
+			layout.add_widget(MDLabel(text =data['cnf'],halign="right"))
+			layout.add_widget(MDLabel(text ="Litre"))
+			layout.add_widget(MDLabel(text =data['weight']))
+			layout.add_widget(MDLabel(text ="Price",halign="right"))
+			layout.add_widget(MDLabel(text = str(self.rateListJson[data['type']][data['snf']][data['cnf']]),halign="right"))
+			aa.add_widget(MDLabel(text ='	',size_hint_y= 0.5,valign="middle"))
+			aa.add_widget(layout)
+			aa.add_widget(MDLabel(text ="Total Price: "+ data['price']+"/-",valign="middle",size_hint_y= 0.3))
+			aa.add_widget(MDLabel(text =data['remark'],size_hint_y= 0.3, valign="middle"))
+			widget = MDLabel(text='[ref=MilkShreeDairy]Print[/ref]', markup=True,valign="bottom",halign="center",size_hint_y= 0.01)
+			widget.bind(on_ref_press=self.print_it)
+			aa.add_widget(widget)
+			self.dialog = MDDialog(
+				title="Milk Shree Dairy",
+				type="custom",
+				content_cls=aa,
+				buttons=[
+					MDFlatButton(
+						text="Cancel", text_color=self.theme_cls.primary_color, on_release = self.close_popup_cancel_dialog
+					)
+				],
+			)
+			self.dialog.open()
+			self.printData = {"customer": Customer, "time":data['date'].split("\n" )[0]+data['date'].split("\n" )[1]+" "+data['sift'],"slip": slip,"type":data['type'],"snf":data['snf'], "cnf":data['cnf'], "lit":data['weight'],"price":str(self.rateListJson[data['type']][data['snf']][data['cnf']]), "total": data['price'], 'remark':data['remark']}
+		except:
+			self.flash("Bill Generate","Something went wrong please try again later.")
 
 	def print_it(self,a,b):
 		try:
